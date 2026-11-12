@@ -572,7 +572,7 @@
       };
       requestAnimationFrame(f);
     };
-    // 마우스가 문장 주변 넓은 영역에 들어오면 1부터 굴러 올라감 — 벗어났다 다시 오면 다시 재생
+    // 마우스가 큰 문장 영역에 들어오면 1부터 굴러 올라감 — 벗어났다 다시 오면 다시 재생
     if (matchMedia('(hover: hover)').matches){
       // 큰 문장 세 줄을 감싸는 영역 (왼쪽 작은 글은 제외)
       const svgEl = g.ownerSVGElement, hit = document.createElementNS(NS, 'rect');
@@ -584,8 +584,7 @@
         if (x1 < x0) return;
         hit.setAttribute('x', x0 - 30); hit.setAttribute('y', y0 - 30); hit.setAttribute('width', x1 - x0 + 60); hit.setAttribute('height', y1 - y0 + 60);
       };
-      // 요청: 섹션 가로 전체 · 작은 글부터 세 번째 줄 아래까지(y 194~602) 넓게
-      hit.setAttribute('x', 0); hit.setAttribute('y', 194); hit.setAttribute('width', 1920); hit.setAttribute('height', 408);
+      place(); setTimeout(place, 1500);
       hit.addEventListener('pointerenter', () => { if (!running){ render(1); count(); } });
       g._count = null;
     } else g._count = count;   // 터치 기기는 화면에 나타날 때 한 번
