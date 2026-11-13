@@ -82,42 +82,21 @@
   #hdr.on{opacity:1}
   #hdr .nav{pointer-events:auto;cursor:pointer}
   body.lock #hdr{opacity:0}
-  /* ───────── 푸터 : 흐르는 큰 글자 + 목록 + Get in touch ───────── */
-  #contact{position:relative;background:#080808;color:#fff;font-family:"Creato Display",sans-serif;overflow:hidden;
-           padding:calc(140 / 1920 * 100vw) 0 calc(56 / 1920 * 100vw + 10px)}
-  #contact .mq{white-space:nowrap;overflow:hidden;line-height:1.08;margin-bottom:calc(120 / 1920 * 100vw)}
-  #contact .mq-in{display:inline-flex;will-change:transform;animation:mq 36s linear infinite}
-  #contact .mq span{font-size:calc(240 / 1920 * 100vw);letter-spacing:-.045em;padding-right:.35em}
-  #contact .mq span i{font-style:italic}
-  @keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
-  #contact .grid{display:grid;grid-template-columns:1fr 1fr;gap:calc(60 / 1920 * 100vw);padding:0 calc(60 / 1920 * 100vw)}
-  #contact .lead{font-size:clamp(14px, calc(22 / 1920 * 100vw), 24px);line-height:1.4;max-width:30em;color:#8a8a8a}
-  #contact .lead b{font-weight:400;color:#fff}
-  #contact .mail{margin-top:calc(36 / 1920 * 100vw);display:flex;justify-content:space-between;align-items:center;max-width:calc(820 / 1920 * 100vw);
-           border-bottom:1px solid #fff;padding-bottom:12px;font-size:clamp(14px, calc(22 / 1920 * 100vw), 24px)}
-  #contact .mail a{color:#fff;text-decoration:none}
-  #contact .mail button{all:unset;cursor:pointer;font-size:.72em;letter-spacing:.04em;color:#8a8a8a;transition:color .3s}
-  #contact .mail button:hover{color:#fff}
-  #contact .note{margin-top:12px;font-size:11px;letter-spacing:.06em;color:#6a6a6a;text-transform:uppercase}
-  #contact .list{justify-self:end;width:min(100%, calc(820 / 1920 * 100vw))}
-  #contact .list a,#contact .list .row{display:flex;justify-content:space-between;color:#fff;text-decoration:none;border-top:1px solid #3a3a3a;
-           padding:8px 0;font-size:clamp(14px, calc(20 / 1920 * 100vw), 22px);transition:padding-left .4s cubic-bezier(.2,.7,.2,1),color .3s}
-  #contact .list a:last-of-type{border-bottom:1px solid #3a3a3a}
-  #contact .list a:hover{padding-left:12px}
-  #contact .list a em{font-style:normal;color:#6a6a6a;font-size:.8em}
-  #contact .list .cap{margin:calc(48 / 1920 * 100vw) 0 10px;font-size:11px;letter-spacing:.06em;color:#6a6a6a;text-transform:uppercase}
-  #contact .bottom{display:flex;justify-content:space-between;align-items:flex-end;padding:0 calc(60 / 1920 * 100vw);margin-top:calc(150 / 1920 * 100vw)}
-  #contact .git{display:inline-flex;align-items:center;gap:.35em;color:#fff;text-decoration:none;font-size:calc(96 / 1920 * 100vw);letter-spacing:-.04em;line-height:1;position:relative}
-  #contact .git svg{width:.8em;height:.8em;flex:none;transition:transform .5s cubic-bezier(.2,.7,.2,1)}
-  #contact .git .t{position:relative}
-  #contact .git .t::after{content:"";position:absolute;left:0;right:0;bottom:-.06em;height:max(2px,.035em);background:#fff;transform-origin:left;transition:transform .7s cubic-bezier(.2,.7,.2,1)}
-  #contact .git:hover .t::after{transform:scaleX(0);transform-origin:right}
-  #contact .git:hover svg{transform:translateY(-.08em) rotate(-8deg)}
-  #contact .meta{display:flex;gap:calc(80 / 1920 * 100vw);font-size:11px;letter-spacing:.06em;color:#6a6a6a;text-transform:uppercase;width:min(100%, calc(820 / 1920 * 100vw));justify-content:space-between}
-  #contact .meta button{all:unset;cursor:pointer;color:#fff}
-  #contact .toast{position:fixed;left:50%;bottom:28px;transform:translate(-50%,8px);opacity:0;z-index:60;
-           font-size:13px;color:#080808;background:#fff;padding:8px 14px;transition:opacity .3s,transform .3s;pointer-events:none}
-  #contact .toast.on{opacity:1;transform:translate(-50%,0)}
+  /* ───────── 푸터 : Get In Touch ───────── */
+  #contact{position:relative;background:#080808;color:#fff;font-family:"Creato Display",sans-serif;height:calc(923 / 1920 * 100vw);min-height:420px}
+  #contact .dot{position:absolute;left:calc(212 / 1920 * 100vw);top:calc(493 / 1920 * 100vw);width:calc(44 / 1920 * 100vw);height:calc(44 / 1920 * 100vw);border-radius:50%;background:#fff;
+           transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+  #contact .git{position:absolute;left:calc(363 / 1920 * 100vw);top:calc(467 / 1920 * 100vw);display:block;line-height:0}
+  #contact .git svg{width:calc(692.4 / 1920 * 100vw);height:auto;display:block;overflow:visible;transition:transform .6s cubic-bezier(.2,.7,.2,1)}
+  #contact .git .u{position:absolute;left:0;right:0;bottom:calc(-14 / 1920 * 100vw);height:max(2px,calc(3 / 1920 * 100vw));background:#fff;transform:scaleX(0);transform-origin:left;
+           transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+  #contact .git:hover svg,#contact .git:focus-visible svg{transform:translateX(calc(14 / 1920 * 100vw))}
+  #contact .git:hover .u,#contact .git:focus-visible .u{transform:scaleX(1) translateX(calc(14 / 1920 * 100vw))}
+  #contact:has(.git:hover) .dot{transform:scale(1.35)}
+  #contact .links{position:absolute;left:calc(366 / 1920 * 100vw);top:calc(713 / 1920 * 100vw);display:flex;flex-direction:column;gap:calc(13 / 1920 * 100vw);
+           font-size:max(11px,calc(20 / 1920 * 100vw));letter-spacing:-.01em;line-height:1}
+  #contact .links a{color:#fff;text-decoration:underline;text-underline-offset:.18em;text-decoration-thickness:1px}
+  #contact .copy{position:absolute;right:calc(60 / 1920 * 100vw);top:calc(754 / 1920 * 100vw);font-size:max(10px,calc(17 / 1920 * 100vw));letter-spacing:-.01em;line-height:1}
 
   /* 온보딩: 1일째부터 646일째까지 — 날짜·진행선이 차오르는 동안 YBY가 섞이다 맞춰지고 숫자는 646에 도착 → 메인 */
   svg text{font-family:"Creato Display","Asta Sans",sans-serif;font-kerning:normal}
@@ -198,29 +177,15 @@
 
 <!-- ═════════════ 푸터 : 연락 ═════════════ -->
 <section id="contact" aria-label="연락하기">
-  <div class="mq" aria-hidden="true"><div class="mq-in"><span>yubin <i>—</i> Design in progress <i>—</i> 646 days</span><span>yubin <i>—</i> Design in progress <i>—</i> 646 days</span><span>yubin <i>—</i> Design in progress <i>—</i> 646 days</span><span>yubin <i>—</i> Design in progress <i>—</i> 646 days</span></div></div>
-  <div class="grid">
-    <div>
-      <p class="lead">646 days in. <b>Day 647</b> is still unwritten —<br>let’s make the next attempt together.</p>
-      <div class="mail"><a href="mailto:ygmo24393@gmail.com?subject=Hello%20from%20646D">ygmo24393@gmail.com</a><button type="button" id="copyMail">COPY ↗</button></div>
-      <p class="note">Open to new projects, collaborations and conversations.</p>
-    </div>
-    <nav class="list" aria-label="푸터 메뉴">
-      <a href="#" data-go="0">Home <em>01</em></a>
-      <a href="#" data-go="1">About <em>02</em></a>
-      <a href="#" data-go="2">Work <em>03</em></a>
-      <p class="cap">Contact:</p>
-      <a href="mailto:ygmo24393@gmail.com?subject=Hello%20from%20646D">Email <em>↗</em></a>
-    </nav>
+  <span class="dot" aria-hidden="true"></span>
+  <a class="git" href="mailto:ygmo24393@gmail.com?subject=Hello%20from%20646D" aria-label="Get In Touch — 메일 보내기 (ygmo24393@gmail.com)">
+    <svg viewBox="0 0 692.4 94.6" aria-hidden="true"><path d="M36.04 94.58C52.58 94.58 62.93 88.51 69.02 77.79L67.56 93.29H80.35L90.09 43.16H50.17L47.83 55.17H71.09C67.07 70.55 57.69 80.24 40.5 80.24C22.03 80.24 14.75 68.48 18.87 47.29C22.99 26.1 34.84 14.34 53.31 14.34C68.17 14.34 75.17 22.22 75.56 32.17H91.33C94.54 15.63 83.11 0 56.1 0C26.9 0 6.75 19.25 1.3 47.29C-4.15 75.33 7.61 94.58 36.04 94.58ZM118.73 94.58C136.69 94.58 148.58 85.93 154.09 72.23H138.71C135.44 79.08 129.21 83.21 120.94 83.21C110.74 83.21 105.48 77.01 107.6 63.44H156.96C157.39 61.89 157.77 60.6 158.05 59.18C161.87 39.54 153 25.33 131.42 25.33C109.97 25.33 95.6 39.41 91.61 59.96C87.52 81.02 97.03 94.58 118.73 94.58ZM129.21 36.7C138.38 36.7 143.3 41.99 142.66 52.59H109.71C113.19 41.99 120.04 36.7 129.21 36.7ZM182.17 93.94C185.15 93.94 190.52 93.55 193.28 93.29L195.47 82.05L188.46 82.18C183.17 82.18 181.32 80.37 182.33 75.2L189.46 38.51H203.93L206.24 26.62H191.77L195.69 6.46H179.02L175.1 26.62H164.64L162.32 38.51H172.79L165.78 74.56C162.92 89.29 167.06 93.94 182.17 93.94ZM244.58 93.29 262.46 1.29H244.89L227.01 93.29ZM312.42 93.29 320.98 49.23C324.12 33.08 318 25.33 302.76 25.33C291.9 25.33 284.98 30.37 279.98 37.47L282.09 26.62H266.2L253.24 93.29H269.91L277.14 56.08C279.25 45.22 286.17 38.89 294.95 38.89C303.09 38.89 305.44 43.42 303.69 52.46L295.75 93.29ZM389.17 93.29 404.26 15.63H432.3L435.09 1.29H361.57L358.78 15.63H386.69L371.6 93.29ZM451.72 94.58C473.55 94.58 488.34 81.02 492.43 59.96C496.5 39.02 487.02 25.33 465.18 25.33C443.47 25.33 428.66 39.02 424.59 59.96C420.5 81.02 430.01 94.58 451.72 94.58ZM454.18 81.92C443.19 81.92 438.4 74.69 441.26 59.96C444.13 45.22 451.73 37.99 462.72 37.99C473.83 37.99 478.63 45.22 475.76 59.96C472.9 74.69 465.29 81.92 454.18 81.92ZM513.48 94.58C524.46 94.58 531.39 89.54 536.39 82.44L534.28 93.29H550.17L563.13 26.62H546.46L539.23 63.83C537.12 74.69 530.2 81.02 521.42 81.02C513.27 81.02 510.92 76.49 512.68 67.45L520.62 26.62H503.95L495.39 70.68C492.25 86.83 498.23 94.58 513.48 94.58ZM588.42 94.58C609.23 94.58 622.31 81.79 625.1 67.45H609.46C606.24 77.4 599.67 81.92 590.89 81.92C580.29 81.92 575.49 74.69 578.36 59.96C581.22 45.22 588.83 37.99 599.43 37.99C609.5 37.99 612.85 44.06 612.48 51.94H628.11C630.65 38.89 623.47 25.33 601.89 25.33C580.57 25.33 565.76 39.02 561.69 59.96C557.59 81.02 567.1 94.58 588.42 94.58ZM683 93.29 691.57 49.23C694.71 33.08 688.59 25.33 673.34 25.33C663.26 25.33 656.47 29.72 651.59 36.18L658.37 1.29H641.7L623.82 93.29H640.49L647.72 56.08C649.83 45.22 656.75 38.89 665.54 38.89C673.68 38.89 676.03 43.42 674.27 52.46L666.33 93.29Z" fill="#fff"/></svg><i class="u"></i>
+  </a>
+  <div class="links">
+    <a href="https://www.behance.net/" target="_blank" rel="noopener">BEHANCE</a>
+    <a href="mailto:ygmo24393@gmail.com?subject=Hello%20from%20646D">YGMO24393@GMAIL.COM</a>
   </div>
-  <div class="bottom">
-    <a class="git" href="mailto:ygmo24393@gmail.com?subject=Hello%20from%20646D" aria-label="Get in touch — 메일 보내기">
-      <svg viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.6" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14"/><path d="M2.5 5.5l9.5 7.5 9.5-7.5"/></svg>
-      <span class="t">Get in touch</span>
-    </a>
-    <div class="meta"><span>© 2026 yubin</span><span>Design in progress</span><button type="button" id="toTop">↑ Back to top</button></div>
-  </div>
-  <div class="toast" id="mailToast">메일 주소를 복사했어요</div>
+  <p class="copy">© 2026 yby All Rights Reserved.</p>
 </section>
 
 
