@@ -82,6 +82,14 @@
   #hdr.on{opacity:1}
   #hdr .nav{pointer-events:auto;cursor:pointer}
   body.lock #hdr{opacity:0}
+  /* BON-D 원본 사이트(bon-d.figma.site) 인터랙션: 영상·마키 */
+  .bdClip{position:absolute;overflow:hidden;pointer-events:none}
+  .bdClip video{position:absolute;display:block}
+  .bdMarq{position:absolute;overflow:hidden;pointer-events:none;background:#0C0B0F}
+  .bdMarq .trk{position:absolute;top:0;left:0;height:100%;display:flex;width:max-content;animation:bdMarq 65s linear infinite}
+  .bdMarq img{display:block;height:98.6%;margin-top:.37%;aspect-ratio:429/932;margin-right:calc(36 / 1920 * 100vw);border-radius:calc(53.3 / 1920 * 100vw)}
+  @keyframes bdMarq{to{transform:translateX(-50%)}}
+
   /* BON-D · BITO 구(orb): AI가 생각하듯 천천히 돌고 숨쉬는 루프 */
   .orbWrap{position:absolute;pointer-events:none}   /* z-index 주면 혼합(lighten)이 갇혀서 검은 사각형이 보임 → 주지 않음 */
   .orbWrap .cv{position:absolute;left:50%;top:48.3%;width:96%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
@@ -1443,6 +1451,39 @@
     ow.innerHTML = '<div class="cv"></div><img class="o1" src="bond-orb.webp" alt=""><img class="o2" src="bond-orb.webp" alt="">';
     wrapBond.insertBefore(ow, bondVideo);
   }
+  // 원본 사이트 영상/마키 겹치기 (원본 좌표 + 48 = 이 SVG 좌표)
+  const BD = 'https://bon-d.figma.site', DY = 48;
+  const bdPct = (x, y, w, h) => ({ left:`${x / 1920 * 100}%`, top:`${(y + DY) / BOND_H * 100}%`, width:`${w / 1920 * 100}%`, height:`${h / BOND_H * 100}%` });
+  const bdVids = [];
+  const bdVid = (id, clip, box, rad, fit = 'cover') => {
+    const c = document.createElement('div'); c.className = 'bdClip';
+    Object.assign(c.style, bdPct(...clip), { borderRadius:`calc(${rad} / 1920 * 100vw)` });
+    const v = document.createElement('video');
+    Object.assign(v, { muted:true, loop:true, playsInline:true, preload:'none' }); v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
+    v.src = `${BD}/_videos/v1/${id}`;
+    Object.assign(v.style, { left:`${(box[0] - clip[0]) / clip[2] * 100}%`, top:`${(box[1] - clip[1]) / clip[3] * 100}%`, width:`${box[2] / clip[2] * 100}%`, height:`${box[3] / clip[3] * 100}%`, objectFit:fit });
+    c.appendChild(v); wrapBond.insertBefore(c, bondVideo); bdVids.push(v);
+  };
+  {
+    // 온보딩: 폰 화면들이 옆으로 흘러가는 마키
+    const m = document.createElement('div'); m.className = 'bdMarq';
+    Object.assign(m.style, bdPct(0, 23753, 1920, 945));
+    const srcs = ['124671788f9c501b7bbb22b3a92e128a08babe14','7326ee098c3d65a592cbb6b82c376f4b00b7dcf5','c48456912665e2f1d25fc053e450f626a51d1ad5','bc7b0c862325e6e23de5fa1031108e8f56fa41b2','97e370306d4f2c494ae390baee5ceaacf8ea1b91','4141275c3ec72311e41c631ae495564ac52ac8a8','743be080ca05c6a3b92d7f5d49d2b05857d214f8'];
+    m.innerHTML = '<div class="trk">' + [...srcs, ...srcs].map(h => `<img alt="" loading="lazy" src="${BD}/_assets/v11/${h}.png">`).join('') + '</div>';
+    wrapBond.insertBefore(m, bondVideo);
+  }
+  bdVid('2bf2abfad356f581725db4b6f3954e632b5a0fcf', [704, 23714, 512, 1024], [704, 23714, 512, 1024], 0);      // 온보딩 가운데 폰
+  bdVid('b58b3ea9ebf72778688492428264144b7c82921a', [0, 24667, 1920, 2754], [-424, 24667, 2756, 2756], 0);     // 코인
+  bdVid('5d9de6a2babf845f0559999e2ad9f6ff823a071e', [975, 29443, 884, 528], [975, 29443, 884, 528], 31);       // 자산 카드
+  bdVid('5ca90f40631b29c005ff1808cc9b9fffe490957a', [203, 31723, 599, 1186], [-552, 31723, 2109, 1186], 0);    // 상속도 왼쪽 폰
+  bdVid('13ca69858c4d8c9b9193e9f1fa9194f9c1dad53f', [964, 31552, 894, 1137], [1136, 31581, 550, 1080], 35);    // 상속도 오른쪽 폰
+  bdVid('9cd0e4483e24ac0c6e6f1b3b8dd434306805a42d', [60, 35468, 885, 1090], [258, 35524, 489, 978], 35);       // 기록함
+  bdVid('0b33831c9f3214ac3551eb49cd104e003020007f', [975, 36590, 885, 706], [1438, 36721, 378, 169], 21);      // 손 + 팝업
+  const bdIO = new IntersectionObserver(es => es.forEach(e => {
+    const v = e.target;
+    if (e.isIntersecting && !wrapBond.hidden) { if (v.preload !== 'auto') v.preload = 'auto'; v.play().catch(() => {}); } else v.pause();
+  }), { root: detail, rootMargin: '300px 0px' });
+  bdVids.forEach(v => bdIO.observe(v));
   function bondCheck(){
     if (wrapBond.hidden) return;
     { const k2 = wrapBond.clientWidth / 1920, vt = detail.scrollTop / k2, vb = (detail.scrollTop + detail.clientHeight) / k2;
@@ -1462,7 +1503,7 @@
       }
     });
   }
-  function bondReset(){ TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ bdVids.forEach(v => v.pause()); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
