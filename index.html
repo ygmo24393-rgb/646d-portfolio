@@ -1512,7 +1512,8 @@
   {
     // 코인: 영상/원래 이미지의 더 어두운 배경 때문에 위아래 섹션과 단차가 보여서, 같은 바탕색 위에 '밝게' 합성 + 살짝 선명하게
     const v = bdVids[bdVids.length - 1], c = v.parentElement;
-    c.style.background = '#0C0C10'; v.style.mixBlendMode = 'lighten'; v.style.filter = 'url(#bdSharp)';
+    c.style.background = '#0C0C10'; v.style.mixBlendMode = 'lighten';
+    if (!/^((?!chrome|android).)*safari/i.test(navigator.userAgent)) v.style.filter = 'url(#bdSharp)';   // 사파리는 영상 필터가 느려서 제외
     const f = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
     f.setAttribute('width', '0'); f.setAttribute('height', '0'); f.style.position = 'absolute';
     f.innerHTML = '<filter id="bdSharp" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="0 -0.35 0 -0.35 2.4 -0.35 0 -0.35 0"/></filter>';
