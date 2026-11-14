@@ -1651,6 +1651,7 @@
     wrapBond.insertBefore(svg, bondVideo);
     const $s = q => svg.querySelector(q), $$s = q => [...svg.querySelectorAll(q)];
     // 솔루션 원: 올린 원을 맨 앞으로
+    $s('#fxFlow').remove();   // UX 플로우 점 이동은 뺌 (요청: 원래대로)
     $$s('.fxSol').forEach(g => g.addEventListener('pointerenter', () => g.parentNode.appendChild(g)));
 
     // 사진 + 문구: 스크롤에 따라 천천히 확대 (원본 사이트처럼)
@@ -1690,7 +1691,7 @@
     const sweep = $s('#fxSweepR'); let sweepT = 0;
     const doSweep = () => { sweep.animate([{ transform:'skewX(-18deg) translateX(0px)' }, { transform:'skewX(-18deg) translateX(5600px)' }], { duration:1700, easing:'cubic-bezier(.45,0,.25,1)' }); sweepT = setTimeout(doSweep, 4200); };
     // UX 플로우: 선을 따라 빛나는 점이 지나가고, 지나간 노드가 퍼지듯 반짝
-    const runner = $s('#fxRunner'), core = $s('#fxRunnerCore'), rings = $$s('#fxFlow .ring');
+    const runner = null, core = null, rings = [];
     let fraf = 0, f0 = 0, lastX = -1;
     const flow = t => {
       const x = ((t - f0) / 6000 % 1) * 1960 - 20;
@@ -1704,7 +1705,6 @@
       { el:$s('#fxStats'), on:false, start(){ statsPlay(); spin = dotC.animate([{ transform:'rotate(0deg)' }, { transform:'rotate(360deg)' }], { duration:40000, iterations:Infinity }); },
         stop(){ tm.splice(0).forEach(clearTimeout); spin && spin.cancel(); statsInit(); } },
       { el:$s('#fxInsightG'), on:false, start(){ sweepT = setTimeout(doSweep, 500); }, stop(){ clearTimeout(sweepT); } },
-      { el:$s('#fxFlow'), on:false, start(){ f0 = performance.now(); lastX = -1; fraf = requestAnimationFrame(flow); }, stop(){ cancelAnimationFrame(fraf); } },
     ];
     const sync = () => {
       const vh = detail.clientHeight, openNow = detail.classList.contains('open') && !wrapBond.hidden;
