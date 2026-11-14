@@ -82,6 +82,18 @@
   #hdr.on{opacity:1}
   #hdr .nav{pointer-events:auto;cursor:pointer}
   body.lock #hdr{opacity:0}
+  /* BON-D · BITO 구(orb): AI가 생각하듯 천천히 돌고 숨쉬는 루프 */
+  .orbWrap{position:absolute;pointer-events:none}   /* z-index 주면 혼합(lighten)이 갇혀서 검은 사각형이 보임 → 주지 않음 */
+  .orbWrap .cv{position:absolute;left:50%;top:48.3%;width:96%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
+    background:radial-gradient(circle, #111216 58%, rgba(17,18,22,0) 72%)}
+  .orbWrap img{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:lighten;transform-origin:49.96% 48.3%}
+  .orbWrap .o1{animation:orbSpin 9s linear infinite, orbBreath 3.2s ease-in-out infinite}
+  .orbWrap .o2{opacity:.55;animation:orbSpinR 13s linear infinite, orbHue 6s ease-in-out infinite}
+  @keyframes orbSpin{to{rotate:360deg}}
+  @keyframes orbSpinR{from{rotate:0deg}to{rotate:-360deg}}
+  @keyframes orbBreath{0%,100%{scale:1}50%{scale:1.045}}
+  @keyframes orbHue{0%,100%{filter:hue-rotate(0deg) brightness(1)}50%{filter:hue-rotate(-14deg) brightness(1.15)}}
+
   /* ───────── 푸터 : Get In Touch ───────── */
   #contact{position:relative;background:#080808;color:#fff;font-family:"Creato Display",sans-serif;height:calc(923 / 1920 * 100vw);min-height:420px}
   #contact .dot{position:absolute;left:calc(212 / 1920 * 100vw);top:calc(493 / 1920 * 100vw);width:calc(44 / 1920 * 100vw);height:calc(44 / 1920 * 100vw);border-radius:50%;background:#fff;
@@ -1424,6 +1436,13 @@
     };
     return { start(){ if (!raf) raf = requestAnimationFrame(frame); }, stop(){ if (raf) cancelAnimationFrame(raf); raf = 0; }, top: Y0, bottom: Y0 + H };
   })();
+  // BITO 구: 원래 정지 이미지 위에 같은 구를 겹쳐 돌림
+  {
+    const ow = document.createElement('div'); ow.className = 'orbWrap';
+    Object.assign(ow.style, { left:`${1062 / 1920 * 100}%`, top:`${39811 / BOND_H * 100}%`, width:`${712 / 1920 * 100}%`, height:`${534 / BOND_H * 100}%` });
+    ow.innerHTML = '<div class="cv"></div><img class="o1" src="bond-orb.webp" alt=""><img class="o2" src="bond-orb.webp" alt="">';
+    wrapBond.insertBefore(ow, bondVideo);
+  }
   function bondCheck(){
     if (wrapBond.hidden) return;
     { const k2 = wrapBond.clientWidth / 1920, vt = detail.scrollTop / k2, vb = (detail.scrollTop + detail.clientHeight) / k2;
