@@ -1334,7 +1334,7 @@
   bondVideo.addEventListener('click', () => { bondVideo.paused ? bondVideo.play().catch(() => {}) : bondVideo.pause(); });
 
   // 2) 스크롤: 사진이 화면에 들어오면 같은 배경색 막이 위로 걷히며 드러남
-  const BOND_H = 45925, WIPES = [{"x":0,"y":2078.0,"w":1821.0,"h":1067.0,"bg":"#0C0C10"},{"x":328.0,"y":7226.0,"w":1569.0,"h":883.0,"bg":"#0C0C10"},{"x":281.0,"y":17930.0,"w":443.0,"h":443.0,"bg":"#FFFFFF"},{"x":704.0,"y":23759.5,"w":512.0,"h":1024.0,"bg":"#0C0C10"},{"x":975.0,"y":29488.0,"w":884.0,"h":528.0,"bg":"#0C0C10"},{"x":1136.0,"y":31626.0,"w":550.0,"h":1080.0,"bg":"#FFFFFF"},{"x":258.0,"y":35569.0,"w":489.0,"h":977.9,"bg":"#F3F4F5"},{"x":668.0,"y":37901.0,"w":401.0,"h":872.0,"bg":"#FFFFFF"},{"x":211.0,"y":37901.0,"w":401.0,"h":872.0,"bg":"#FFFFFF"},{"x":1062.0,"y":39811.0,"w":712.0,"h":534.0,"bg":"#111216"}];
+  const BOND_H = 45925, WIPES = [];   // 사진이 배경색 막에서 걷히며 나타나던 효과는 뺌 (요청)
   const wipes = WIPES.map(r => {
     const d = document.createElement('div'); d.className = 'wipe';
     Object.assign(d.style, { left:`${r.x / 1920 * 100}%`, top:`${r.y / BOND_H * 100}%`, width:`${r.w / 1920 * 100}%`, height:`${r.h / BOND_H * 100}%`, background:r.bg });
