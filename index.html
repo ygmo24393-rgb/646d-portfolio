@@ -1486,8 +1486,8 @@
     };
     live(ow, () => { cancelAnimationFrame(vraf); ov.play().catch(() => {}); voice(); }, () => { cancelAnimationFrame(vraf); ov.pause(); });
   }
-  // 원본 사이트 영상/마키 겹치기 (원본 좌표 + 48 = 이 SVG 좌표)
-  const BD = 'https://bon-d.figma.site', DY = 48;
+  // 원본 사이트 영상/마키 겹치기
+  const BD = 'https://bon-d.figma.site', DY = 45;   // 원본 좌표 + 45 = 이 SVG 좌표 (카드 사각형 위치로 정확히 맞춤)
   const bdPct = (x, y, w, h) => ({ left:`${x / 1920 * 100}%`, top:`${(y + DY) / BOND_H * 100}%`, width:`${w / 1920 * 100}%`, height:`${h / BOND_H * 100}%` });
   const bdVids = [];
   const bdVid = (id, clip, box, rad, fit = 'cover') => {
@@ -1520,7 +1520,7 @@
     document.body.appendChild(f);
   }
   bdVid('5d9de6a2babf845f0559999e2ad9f6ff823a071e', [975, 29443, 884, 528], [975, 29443, 884, 528], 31);       // 자산 카드
-  bdVid('5ca90f40631b29c005ff1808cc9b9fffe490957a', [203, 31723, 599, 1186], [-552, 31723, 2109, 1186], 0);    // 상속도 왼쪽 폰
+  bdVid('5ca90f40631b29c005ff1808cc9b9fffe490957a', [203, 31723, 599, 969.5], [-552, 31723, 2109, 1186], 0);  /* 카드 아래 끝에서 잘라 카드 밖으로 안 나가게 */    // 상속도 왼쪽 폰
   bdVid('13ca69858c4d8c9b9193e9f1fa9194f9c1dad53f', [964, 31552, 894, 1137], [1136, 31581, 550, 1080], 35);    // 상속도 오른쪽 폰
   bdVid('9cd0e4483e24ac0c6e6f1b3b8dd434306805a42d', [60, 35468, 885, 1090], [258, 35524, 489, 978], 35);       // 기록함
   bdVid('0b33831c9f3214ac3551eb49cd104e003020007f', [975, 36590, 885, 706], [1438, 36721, 378, 169], 21);      // 손 + 팝업
