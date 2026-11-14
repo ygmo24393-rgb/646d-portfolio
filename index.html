@@ -1452,6 +1452,18 @@
     };
     return { start(){ if (!raf) raf = requestAnimationFrame(frame); }, stop(){ if (raf) cancelAnimationFrame(raf); raf = 0; }, top: Y0, bottom: Y0 + H };
   })();
+  // 화면에 보이는 동안만 재생하는 것들: 스크롤·열기·닫기 상태와 상관없이 0.7초마다 다시 확인 (IntersectionObserver는 상세 열 때 놓치는 경우가 있어서)
+  const LIVE = [];
+  const live = (el, start, stop) => LIVE.push({ el, start, stop, on:false });
+  function liveSync(){
+    const vh = detail.clientHeight;
+    LIVE.forEach(o => {
+      const r = o.el.getBoundingClientRect();
+      const vis = !wrapBond.hidden && detail.classList.contains('open') && r.height > 0 && r.bottom > -300 && r.top < vh + 300;
+      if (vis !== o.on) { o.on = vis; vis ? o.start() : o.stop(); }
+    });
+  }
+  setInterval(liveSync, 700);
   // BITO 구: 원래 구 색으로 바꾼 레퍼런스 움직임 영상(/tmp/bake5.py) + 말에 반응하는 듯한 맥동
   {
     const ow = document.createElement('div'); ow.className = 'orbWrap';
@@ -1472,10 +1484,7 @@
       ov.style.filter = `brightness(${1 + lvl * 0.22}) saturate(${1 + lvl * 0.15})`;
       vraf = requestAnimationFrame(voice);
     };
-    new IntersectionObserver(es => es.forEach(e => {
-      cancelAnimationFrame(vraf);
-      if (e.isIntersecting && !wrapBond.hidden) { ov.play().catch(() => {}); voice(); } else ov.pause();
-    }), { root: detail }).observe(ow);
+    live(ow, () => { cancelAnimationFrame(vraf); ov.play().catch(() => {}); voice(); }, () => { cancelAnimationFrame(vraf); ov.pause(); });
   }
   // 원본 사이트 영상/마키 겹치기 (원본 좌표 + 48 = 이 SVG 좌표)
   const BD = 'https://bon-d.figma.site', DY = 48;
@@ -1505,11 +1514,7 @@
   bdVid('13ca69858c4d8c9b9193e9f1fa9194f9c1dad53f', [964, 31552, 894, 1137], [1136, 31581, 550, 1080], 35);    // 상속도 오른쪽 폰
   bdVid('9cd0e4483e24ac0c6e6f1b3b8dd434306805a42d', [60, 35468, 885, 1090], [258, 35524, 489, 978], 35);       // 기록함
   bdVid('0b33831c9f3214ac3551eb49cd104e003020007f', [975, 36590, 885, 706], [1438, 36721, 378, 169], 21);      // 손 + 팝업
-  const bdIO = new IntersectionObserver(es => es.forEach(e => {
-    const v = e.target;
-    if (e.isIntersecting && !wrapBond.hidden) { if (v.preload !== 'auto') v.preload = 'auto'; v.play().catch(() => {}); } else v.pause();
-  }), { root: detail, rootMargin: '300px 0px' });
-  bdVids.forEach(v => bdIO.observe(v));
+  bdVids.forEach(v => live(v.parentElement, () => { if (v.preload !== 'auto') v.preload = 'auto'; v.play().catch(() => {}); }, () => v.pause()));
   // 기록함 카드 캐러셀 (원본 사이트 인터랙션: 4초마다 다음 화면으로, 탭 알약이 따라 이동)
   const REC = (() => {
     const CX = 975, CY = 35513, CW = 885, CH = 1090, P = 426.22;
@@ -1549,8 +1554,9 @@
       box
     };
   })();
-  new IntersectionObserver(es => es.forEach(e => (e.isIntersecting && !wrapBond.hidden) ? REC.start() : REC.stop()), { root: detail }).observe(REC.box);
+  live(REC.box, () => REC.start(), () => REC.stop());
   function bondCheck(){
+    liveSync();
     if (wrapBond.hidden) return;
     { const k2 = wrapBond.clientWidth / 1920, vt = detail.scrollTop / k2, vb = (detail.scrollTop + detail.clientHeight) / k2;
       if (AUTH.bottom > vt && AUTH.top < vb) AUTH.start(); else AUTH.stop(); }
@@ -1569,7 +1575,7 @@
       }
     });
   }
-  function bondReset(){ REC.stop(); bdVids.forEach(v => v.pause()); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ LIVE.forEach(o => { if (o.on) { o.on = false; o.stop(); } }); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
