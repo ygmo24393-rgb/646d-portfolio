@@ -1509,6 +1509,15 @@
   }
   bdVid('2bf2abfad356f581725db4b6f3954e632b5a0fcf', [704, 23714, 512, 1024], [704, 23714, 512, 1024], 0);      // 온보딩 가운데 폰
   bdVid('b58b3ea9ebf72778688492428264144b7c82921a', [0, 24667, 1920, 2754], [-424, 24667, 2756, 2756], 0);     // 코인
+  {
+    // 코인: 영상/원래 이미지의 더 어두운 배경 때문에 위아래 섹션과 단차가 보여서, 같은 바탕색 위에 '밝게' 합성 + 살짝 선명하게
+    const v = bdVids[bdVids.length - 1], c = v.parentElement;
+    c.style.background = '#0C0C10'; v.style.mixBlendMode = 'lighten'; v.style.filter = 'url(#bdSharp)';
+    const f = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    f.setAttribute('width', '0'); f.setAttribute('height', '0'); f.style.position = 'absolute';
+    f.innerHTML = '<filter id="bdSharp" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="0 -0.35 0 -0.35 2.4 -0.35 0 -0.35 0"/></filter>';
+    document.body.appendChild(f);
+  }
   bdVid('5d9de6a2babf845f0559999e2ad9f6ff823a071e', [975, 29443, 884, 528], [975, 29443, 884, 528], 31);       // 자산 카드
   bdVid('5ca90f40631b29c005ff1808cc9b9fffe490957a', [203, 31723, 599, 1186], [-552, 31723, 2109, 1186], 0);    // 상속도 왼쪽 폰
   bdVid('13ca69858c4d8c9b9193e9f1fa9194f9c1dad53f', [964, 31552, 894, 1137], [1136, 31581, 550, 1080], 35);    // 상속도 오른쪽 폰
