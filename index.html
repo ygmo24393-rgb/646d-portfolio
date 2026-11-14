@@ -1395,8 +1395,39 @@
       play(){ if (played) return; played = true;
         requestAnimationFrame(() => { im.style.transition = 'transform 1s cubic-bezier(.16,1,.3,1) .25s, opacity .6s ease .25s'; im.style.opacity = 1; im.style.transform = 'none'; }); } };
   })();
+  // 인증 요청 액션 3종(필요 · 완료 · 대기 중): 점들이 계속 움직이는 무한 반복 (원래 정지 이미지 위를 흰 면으로 덮고 그 위에 그림)
+  const AUTH = (() => {
+    const NS = 'http://www.w3.org/2000/svg', X0 = 60, Y0 = 33300, W = 900, H = 200, BLUE = '#2089F9', R = 10;
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', `${X0} ${Y0} ${W} ${H}`);
+    Object.assign(svg.style, { position:'absolute', left:`${X0 / 1920 * 100}%`, top:`${Y0 / BOND_H * 100}%`, width:`${W / 1920 * 100}%`, height:`${H / BOND_H * 100}%`, pointerEvents:'none', zIndex:2, overflow:'visible' });
+    const C = [[201, 33405], [506, 33416], [813, 33414]];
+    C.forEach(([x, y]) => { const r = document.createElementNS(NS, 'rect'); r.setAttribute('x', x - 70); r.setAttribute('y', y - 62); r.setAttribute('width', 140); r.setAttribute('height', 110); r.setAttribute('fill', '#fff'); svg.appendChild(r); });
+    const dot = () => { const c = document.createElementNS(NS, 'circle'); c.setAttribute('r', R); c.setAttribute('fill', BLUE); svg.appendChild(c); return c; };
+    const A = [dot(), dot(), dot(), dot()], B = [dot(), dot(), dot()], D = [dot(), dot(), dot()];
+    wrapBond.insertBefore(svg, bondVideo);
+    const ease = t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2;
+    const set = (c, x, y, r) => { c.setAttribute('cx', x.toFixed(2)); c.setAttribute('cy', y.toFixed(2)); if (r !== undefined) c.setAttribute('r', r.toFixed(2)); };
+    let raf = 0;
+    const frame = n => {
+      raf = 0;
+      if (wrapBond.hidden) return;
+      // 1) 인증이 필요합니다: 4개가 돌면서 한 점으로 모였다가 다시 퍼짐
+      { const T = 2600, p = (n % T) / T, k = ease(p < .5 ? p * 2 : 2 - p * 2), rad = 37 * (1 - k), ang = Math.PI / 2 * ease(p) * 2 - Math.PI / 2;
+        A.forEach((c, i) => { const a = ang + i * Math.PI / 2; set(c, C[0][0] + Math.cos(a) * rad, C[0][1] + Math.sin(a) * rad, R + 2 * k); }); }
+      // 2) 인증 완료: 세모가 오므라들었다 펴지며 돌기
+      { const T = 2200, p = (n % T) / T, k = ease(p < .5 ? p * 2 : 2 - p * 2), rad = 35 - 22 * k, ang = -Math.PI / 2 + Math.PI * 2 / 3 * ease(p);
+        B.forEach((c, i) => { const a = ang + i * Math.PI * 2 / 3; set(c, C[1][0] + Math.cos(a) * rad, C[1][1] + 2 + Math.sin(a) * rad); }); }
+      // 3) 인증 대기 중: 세 점이 차례로 통통 튀는 물결
+      { const T = 1400; D.forEach((c, i) => { const p = ((n - i * 160) % T + T) % T / T, up = p < .36 ? Math.sin(p / .36 * Math.PI) : 0; set(c, C[2][0] + (i - 1) * 46, C[2][1] - 14 * up); }); }
+      raf = requestAnimationFrame(frame);
+    };
+    return { start(){ if (!raf) raf = requestAnimationFrame(frame); }, stop(){ if (raf) cancelAnimationFrame(raf); raf = 0; }, top: Y0, bottom: Y0 + H };
+  })();
   function bondCheck(){
     if (wrapBond.hidden) return;
+    { const k2 = wrapBond.clientWidth / 1920, vt = detail.scrollTop / k2, vb = (detail.scrollTop + detail.clientHeight) / k2;
+      if (AUTH.bottom > vt && AUTH.top < vb) AUTH.start(); else AUTH.stop(); }
     { const k1 = wrapBond.clientWidth / 1920, b1 = (detail.scrollTop + detail.clientHeight * .8) / k1;
       if (NOTI.top < b1) NOTI.play(); }
     { const k0 = wrapBond.clientWidth / 1920, b0 = (detail.scrollTop + detail.clientHeight * .75) / k0, t0 = detail.scrollTop / k0;
@@ -1412,7 +1443,7 @@
       }
     });
   }
-  function bondReset(){ TL.reset(); NOTI.reset(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
