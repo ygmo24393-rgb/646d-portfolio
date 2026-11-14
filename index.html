@@ -90,15 +90,17 @@
   .bdMarq img{display:block;height:98.6%;margin-top:.37%;aspect-ratio:429/932;margin-right:calc(36 / 1920 * 100vw);border-radius:calc(53.3 / 1920 * 100vw)}
   @keyframes bdMarq{to{transform:translateX(-50%)}}
 
-  /* BON-D · BITO 구(orb): 회전 대신 물처럼 일렁이는 루프 (SVG 난류 왜곡) */
+  /* BON-D · BITO 구(orb): AI가 생각하듯 천천히 돌고 숨쉬는 루프 */
   .orbWrap{position:absolute;pointer-events:none}   /* z-index 주면 혼합(lighten)이 갇혀서 검은 사각형이 보임 → 주지 않음 */
   .orbWrap .cv{position:absolute;left:50%;top:48.3%;width:96%;aspect-ratio:1;transform:translate(-50%,-50%);border-radius:50%;
     background:radial-gradient(circle, #111216 58%, rgba(17,18,22,0) 72%)}
   .orbWrap img{position:absolute;inset:0;width:100%;height:100%;mix-blend-mode:lighten;transform-origin:49.96% 48.3%}
-  .orbWrap .o1{filter:url(#orbWobble);animation:orbBreath 4.2s ease-in-out infinite}
-  .orbWrap .o2{opacity:.45;filter:url(#orbWobble2) blur(6px);animation:orbGlow 3.1s ease-in-out infinite}
-  @keyframes orbBreath{0%,100%{scale:1}50%{scale:1.035}}
-  @keyframes orbGlow{0%,100%{opacity:.25;scale:1.01}50%{opacity:.6;scale:1.06}}
+  .orbWrap .o1{animation:orbSpin 9s linear infinite, orbBreath 3.2s ease-in-out infinite}
+  .orbWrap .o2{opacity:.55;animation:orbSpinR 13s linear infinite, orbHue 6s ease-in-out infinite}
+  @keyframes orbSpin{to{rotate:360deg}}
+  @keyframes orbSpinR{from{rotate:0deg}to{rotate:-360deg}}
+  @keyframes orbBreath{0%,100%{scale:1}50%{scale:1.045}}
+  @keyframes orbHue{0%,100%{filter:hue-rotate(0deg) brightness(1)}50%{filter:hue-rotate(-14deg) brightness(1.15)}}
 
   /* ───────── 푸터 : Get In Touch ───────── */
   #contact{position:relative;background:#080808;color:#fff;font-family:"Creato Display",sans-serif;height:calc(923 / 1920 * 100vw);min-height:420px}
@@ -1446,10 +1448,7 @@
   {
     const ow = document.createElement('div'); ow.className = 'orbWrap';
     Object.assign(ow.style, { left:`${1062 / 1920 * 100}%`, top:`${39811 / BOND_H * 100}%`, width:`${712 / 1920 * 100}%`, height:`${534 / BOND_H * 100}%` });
-    ow.innerHTML = '<svg width="0" height="0" style="position:absolute"><defs>'
-      + '<filter id="orbWobble" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency="0.006 0.009" numOctaves="2" seed="3" result="n"><animate attributeName="baseFrequency" dur="7s" values="0.006 0.009;0.010 0.006;0.007 0.011;0.006 0.009" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="26" xChannelSelector="R" yChannelSelector="G"><animate attributeName="scale" dur="4.2s" values="12;24;12" repeatCount="indefinite"/></feDisplacementMap></filter>'
-      + '<filter id="orbWobble2" x="-15%" y="-15%" width="130%" height="130%"><feTurbulence type="fractalNoise" baseFrequency="0.008" numOctaves="1" seed="9" result="n"><animate attributeName="baseFrequency" dur="5s" values="0.008;0.004;0.008" repeatCount="indefinite"/></feTurbulence><feDisplacementMap in="SourceGraphic" in2="n" scale="30"/></filter>'
-      + '</defs></svg><div class="cv"></div><img class="o2" src="bond-orb.webp" alt=""><img class="o1" src="bond-orb.webp" alt="">';
+    ow.innerHTML = '<div class="cv"></div><img class="o1" src="bond-orb.webp" alt=""><img class="o2" src="bond-orb.webp" alt="">';
     wrapBond.insertBefore(ow, bondVideo);
   }
   // 원본 사이트 영상/마키 겹치기 (원본 좌표 + 48 = 이 SVG 좌표)
