@@ -1383,8 +1383,22 @@
       }
     };
   })();
+  // 알림 카드(본인 인증 요청이 도착했어요): 처음엔 없다가 사진 위로 아래에서 쓱 올라옴
+  const NOTI = (() => {
+    const im = document.createElement('img'); im.src = 'bond-noti.svg'; im.alt = ''; im.decoding = 'async';
+    Object.assign(im.style, { position:'absolute', left:`${1073.09 / 1920 * 100}%`, top:`${34418.1 / BOND_H * 100}%`, width:`${696.829 / 1920 * 100}%`,
+      pointerEvents:'none', zIndex:2, opacity:0, transform:'translateY(70%)' });
+    wrapBond.insertBefore(im, bondVideo);
+    let played = false;
+    return { top: 34418, im,
+      reset(){ played = false; im.style.transition = 'none'; im.style.opacity = 0; im.style.transform = 'translateY(70%)'; },
+      play(){ if (played) return; played = true;
+        requestAnimationFrame(() => { im.style.transition = 'transform 1s cubic-bezier(.16,1,.3,1) .25s, opacity .6s ease .25s'; im.style.opacity = 1; im.style.transform = 'none'; }); } };
+  })();
   function bondCheck(){
     if (wrapBond.hidden) return;
+    { const k1 = wrapBond.clientWidth / 1920, b1 = (detail.scrollTop + detail.clientHeight * .8) / k1;
+      if (NOTI.top < b1) NOTI.play(); }
     { const k0 = wrapBond.clientWidth / 1920, b0 = (detail.scrollTop + detail.clientHeight * .75) / k0, t0 = detail.scrollTop / k0;
       if (TL.top < b0) TL.play(); }
     const k = wrapBond.clientWidth / 1920, bottom = (detail.scrollTop + detail.clientHeight * .85) / k, top = detail.scrollTop / k;
@@ -1398,7 +1412,7 @@
       }
     });
   }
-  function bondReset(){ TL.reset(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ TL.reset(); NOTI.reset(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
