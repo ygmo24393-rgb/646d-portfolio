@@ -1413,13 +1413,13 @@
       raf = 0;
       if (wrapBond.hidden) return;
       // 1) 인증이 필요합니다: 4개가 돌면서 한 점으로 모였다가 다시 퍼짐
-      { const T = 1500, p = (n % T) / T, k = ease(p < .5 ? p * 2 : 2 - p * 2), rad = 37 * (1 - k), ang = Math.PI / 2 * ease(p) * 2 - Math.PI / 2;
+      { const T = 2500, p = (n % T) / T, k = ease(p < .5 ? p * 2 : 2 - p * 2), rad = 37 * (1 - k), ang = Math.PI * 2 * ease(p) - Math.PI / 2;   // 영상 기준 한 바퀴 2.5초
         A.forEach((c, i) => { const a = ang + i * Math.PI / 2; set(c, C[0][0] + Math.cos(a) * rad, C[0][1] + Math.sin(a) * rad, R + 2 * k); }); }
       // 2) 인증 완료: 세모가 오므라들었다 펴지며 돌기
-      { const T = 1300, p = (n % T) / T, k = ease(p < .5 ? p * 2 : 2 - p * 2), rad = 35 - 22 * k, ang = -Math.PI / 2 + Math.PI * 2 / 3 * ease(p);
+      { const T = 770, p = (n % T) / T,   /* 영상 기준 0.77초 */ k = ease(p < .5 ? p * 2 : 2 - p * 2), rad = 35 - 22 * k, ang = -Math.PI / 2 + Math.PI * 2 / 3 * ease(p);
         B.forEach((c, i) => { const a = ang + i * Math.PI * 2 / 3; set(c, C[1][0] + Math.cos(a) * rad, C[1][1] + 2 + Math.sin(a) * rad); }); }
       // 3) 인증 대기 중: 세 점이 차례로 통통 튀는 물결
-      { const T = 900; D.forEach((c, i) => { const p = ((n - i * 110) % T + T) % T / T, up = p < .36 ? Math.sin(p / .36 * Math.PI) : 0; set(c, C[2][0] + (i - 1) * 46, C[2][1] - 14 * up); }); }
+      { const T = 1070; D.forEach((c, i) => { const p = ((n - i * 130)   /* 영상 기준 1.07초 */ % T + T) % T / T, up = p < .36 ? Math.sin(p / .36 * Math.PI) : 0; set(c, C[2][0] + (i - 1) * 46, C[2][1] - 14 * up); }); }
       raf = requestAnimationFrame(frame);
     };
     return { start(){ if (!raf) raf = requestAnimationFrame(frame); }, stop(){ if (raf) cancelAnimationFrame(raf); raf = 0; }, top: Y0, bottom: Y0 + H };
