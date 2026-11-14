@@ -82,6 +82,17 @@
   #hdr.on{opacity:1}
   #hdr .nav{pointer-events:auto;cursor:pointer}
   body.lock #hdr{opacity:0}
+  /* BON-D 기록함 카드: 원본 사이트처럼 폰 화면이 옆으로 넘어가고 탭(녹음·카메라·텍스트)이 따라 바뀜 */
+  .bdRec{position:absolute;overflow:hidden;pointer-events:none;background:#fff}
+  .bdRec > *{position:absolute}
+  .bdRec .trk{left:0;top:0;width:100%;height:100%;transition:transform 1.4s cubic-bezier(.22,.9,.24,1)}
+  .bdRec .ph{position:absolute;overflow:hidden}
+  .bdRec .ph img{position:absolute;left:0;top:0;width:100%;display:block}
+  .bdRec .bar{background:#fff}
+  .bdRec .pill{background:#2089F9;transition:left 1.4s cubic-bezier(.22,.9,.24,1)}
+  .bdRec svg{overflow:visible}
+  .bdRec svg path{transition:fill .6s ease}
+
   /* BON-D 원본 사이트(bon-d.figma.site) 인터랙션: 영상·마키 */
   .bdClip{position:absolute;overflow:hidden;pointer-events:none}
   .bdClip video{position:absolute;display:block}
@@ -1499,6 +1510,46 @@
     if (e.isIntersecting && !wrapBond.hidden) { if (v.preload !== 'auto') v.preload = 'auto'; v.play().catch(() => {}); } else v.pause();
   }), { root: detail, rootMargin: '300px 0px' });
   bdVids.forEach(v => bdIO.observe(v));
+  // 기록함 카드 캐러셀 (원본 사이트 인터랙션: 4초마다 다음 화면으로, 탭 알약이 따라 이동)
+  const REC = (() => {
+    const CX = 975, CY = 35513, CW = 885, CH = 1090, P = 426.22;
+    const L = (x, y, w, h) => `left:${(x - CX) / CW * 100}%;top:${(y - CY) / CH * 100}%;width:${w / CW * 100}%;height:${h / CH * 100}%`;
+    const box = document.createElement('div'); box.className = 'bdRec';
+    Object.assign(box.style, { left:`${CX / 1920 * 100}%`, top:`${CY / BOND_H * 100}%`, width:`${CW / 1920 * 100}%`, height:`${CH / BOND_H * 100}%`, borderRadius:`calc(35 / 1920 * 100vw)` });
+    const seq = [{ src:'bond-rec-1.webp', h:1.03529 }, { src:'bond-rec-2.webp', h:1.03529 }, { src:'bond-rec-3.webp', h:1.02861 }];   // 녹음, 카메라, 텍스트
+    let html = `<img src="bond-rec-bg.webp" alt="" style="${L(711, 35471, 2010, 1206)}"><div class="trk">`;
+    for (let j = -1; j <= 6; j++) {
+      const it = seq[((j % 3) + 3) % 3];
+      html += `<div class="ph" style="${L(791.08 + j * P, 35811.1, 402.205, 874.446)};border-radius:calc(60 / 1920 * 100vw)"><img src="${it.src}" alt="" style="height:${it.h * 100}%"></div>`;
+    }
+    html += `</div><img src="bond-rec-frame.webp" alt="" style="${L(1193.75, 35787.9, 450.23, 920.47)}">`
+      + `<div class="bar" style="${L(1193.29, 35636, 450.23, 60.03)};border-radius:999px"></div>`
+      + `<div class="pill" style="${L(1344.61, 35639, 150.08, 54.03)};border-radius:999px"></div>`
+      + `<svg viewBox="${CX} ${CY} ${CW} ${CH}" style="left:0;top:0;width:100%;height:100%"><path d="M1266.16 35669.4V35676.5H1263.91V35671.2H1251.55V35669.4H1266.16ZM1266.35 35661.2V35663H1260.04V35665.7H1268.53V35667.4H1249.34V35665.7H1257.81V35663H1251.88V35655.9H1254.08V35661.2H1266.35ZM1289.26 35665.6V35667.4H1270.1V35665.6H1289.26ZM1274.6 35671V35674.4H1284.75V35671H1274.6ZM1286.91 35669.2V35676.3H1272.4V35669.2H1286.91ZM1279.66 35657.7C1278.59 35657.7 1277.66 35657.8 1276.87 35658C1276.09 35658.1 1275.49 35658.4 1275.07 35658.7C1274.66 35659.1 1274.45 35659.5 1274.46 35660C1274.45 35660.7 1274.9 35661.2 1275.83 35661.6C1276.76 35662 1278.03 35662.2 1279.66 35662.2C1281.29 35662.2 1282.56 35662 1283.49 35661.6C1284.41 35661.2 1284.87 35660.7 1284.87 35660C1284.87 35659.5 1284.66 35659.1 1284.24 35658.7C1283.83 35658.4 1283.23 35658.1 1282.44 35658C1281.66 35657.8 1280.73 35657.7 1279.66 35657.7ZM1279.66 35655.9C1281.2 35655.9 1282.53 35656.1 1283.65 35656.4C1284.79 35656.7 1285.66 35657.2 1286.25 35657.8C1286.86 35658.4 1287.17 35659.1 1287.17 35660C1287.17 35660.8 1286.86 35661.5 1286.25 35662.1C1285.66 35662.7 1284.79 35663.1 1283.65 35663.5C1282.53 35663.8 1281.2 35663.9 1279.66 35663.9C1278.14 35663.9 1276.82 35663.8 1275.68 35663.5C1274.55 35663.1 1273.68 35662.7 1273.08 35662.1C1272.47 35661.5 1272.16 35660.8 1272.16 35660C1272.16 35659.1 1272.47 35658.4 1273.08 35657.8C1273.68 35657.2 1274.55 35656.7 1275.68 35656.4C1276.82 35656.1 1278.14 35655.9 1279.66 35655.9Z" fill="#8A8B96"/><path d="M1404.41 35655.5V35663.9H1407.67V35665.7H1404.41V35676.5H1402.18V35655.5H1404.41ZM1398.97 35657.6C1398.96 35659.9 1398.68 35661.9 1398.13 35663.8C1397.56 35665.6 1396.58 35667.3 1395.17 35668.9C1393.77 35670.5 1391.83 35671.9 1389.38 35673.1L1388.16 35671.4C1390.01 35670.5 1391.54 35669.5 1392.72 35668.4C1393.91 35667.3 1394.83 35666.2 1395.48 35665.3H1389.38V35663.4H1396.16C1396.46 35662 1396.66 35660.7 1396.74 35659.4H1389.38V35657.6H1398.97ZM1426.88 35655.5V35676.5H1424.74V35655.5H1426.88ZM1411.61 35659.6V35669.2H1415.57V35659.6H1411.61ZM1417.66 35657.9V35663.3H1420.47V35655.9H1422.61V35675.5H1420.47V35665.2H1417.66V35671H1409.5V35657.9H1417.66ZM1439.98 35657.4V35665.1H1432.62V35669.7C1434.57 35669.7 1436.26 35669.7 1437.66 35669.7C1439.09 35669.7 1440.52 35669.7 1441.98 35669.7V35671.5C1440.56 35671.5 1439.09 35671.5 1437.59 35671.5C1436.07 35671.5 1434.25 35671.5 1432.13 35671.5H1430.42V35663.3H1437.78V35659.2H1430.37V35657.4H1439.98ZM1445.92 35655.5V35663.7H1449.29V35665.6H1445.92V35676.6H1443.71V35655.5H1445.92Z" fill="white"/><path d="M1550.91 35655.9V35668.4H1548.8V35662.9H1546.2V35661.2H1548.8V35655.9H1550.91ZM1555.04 35655.5V35668.5H1552.93V35655.5H1555.04ZM1555.04 35669.5V35676.5H1552.83V35671.3H1540.68V35669.5H1555.04ZM1546.05 35657V35658.8H1540.19V35661.2H1545.23V35662.9H1540.19V35665.6C1541.67 35665.6 1542.91 35665.6 1543.91 35665.6C1544.91 35665.6 1545.93 35665.6 1546.95 35665.6V35667.4C1545.95 35667.4 1544.89 35667.4 1543.78 35667.4C1542.68 35667.4 1541.22 35667.4 1539.42 35667.4H1538.06V35657H1546.05ZM1577.1 35671.9V35673.7H1557.87V35671.9H1577.1ZM1568.54 35658.5C1568.54 35659.6 1568.89 35660.7 1569.62 35661.7C1570.32 35662.8 1571.27 35663.7 1572.46 35664.4C1573.64 35665.1 1574.9 35665.6 1576.23 35665.9L1575.2 35667.7C1574.09 35667.5 1573.01 35667.1 1571.99 35666.5C1570.97 35666 1570.05 35665.3 1569.25 35664.5C1568.45 35663.7 1567.83 35662.8 1567.38 35661.8C1566.92 35662.8 1566.3 35663.7 1565.52 35664.5C1564.72 35665.3 1563.81 35666 1562.79 35666.5C1561.77 35667.1 1560.69 35667.5 1559.56 35667.7L1558.58 35665.9C1559.9 35665.6 1561.14 35665.1 1562.32 35664.4C1563.49 35663.6 1564.43 35662.7 1565.14 35661.7C1565.85 35660.7 1566.2 35659.6 1566.2 35658.5V35656.9H1568.54V35658.5ZM1597.85 35672V35673.9H1578.63V35672H1597.85ZM1595.67 35666.7V35668.5H1581.04V35657.2H1595.46V35659H1583.29V35661.9H1595.02V35663.6H1583.29V35666.7H1595.67Z" fill="#8A8B96"/></svg>`;
+    box.innerHTML = html;
+    wrapBond.insertBefore(box, bondVideo);
+    const trk = box.querySelector('.trk'), pill = box.querySelector('.pill'), lbl = [...box.querySelectorAll('svg path')];
+    const PILLX = [1196.29, 1344.61, 1490.44];
+    let off = 0, timer = 0, run = false;
+    const paint = (instant) => {
+      trk.style.transition = pill.style.transition = instant ? 'none' : '';
+      trk.style.transform = `translateX(${-off * P / CW * 100}%)`;
+      const a = (1 + off) % 3;
+      pill.style.left = `${(PILLX[a] - CX) / CW * 100}%`;
+      lbl.forEach((p, i) => p.setAttribute('fill', i === a ? 'white' : '#8A8B96'));
+    };
+    const step = () => {
+      off++; paint(false);
+      if (off === 3) setTimeout(() => { off = 0; paint(true); }, 1500);
+      timer = setTimeout(step, 4000);
+    };
+    return {
+      start(){ if (run) return; run = true; timer = setTimeout(step, 2500); },
+      stop(){ run = false; clearTimeout(timer); off = 0; paint(true); },
+      box
+    };
+  })();
+  new IntersectionObserver(es => es.forEach(e => (e.isIntersecting && !wrapBond.hidden) ? REC.start() : REC.stop()), { root: detail }).observe(REC.box);
   function bondCheck(){
     if (wrapBond.hidden) return;
     { const k2 = wrapBond.clientWidth / 1920, vt = detail.scrollTop / k2, vb = (detail.scrollTop + detail.clientHeight) / k2;
@@ -1518,7 +1569,7 @@
       }
     });
   }
-  function bondReset(){ bdVids.forEach(v => v.pause()); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ REC.stop(); bdVids.forEach(v => v.pause()); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
