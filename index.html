@@ -1353,8 +1353,40 @@
   }
   addEventListener('resize', () => { fitBondHero(); window.__fitAmbitHero && window.__fitAmbitHero(); });
 
+  // 타임라인(온·오프라인 연동 → 사후 전달 실행): 처음엔 비어 있다가 선이 왼쪽부터 그려지고, 점과 글이 앞에서부터 차례로 등장
+  const TL = (() => {
+    const W = '#FFFFFF', mk = (x, y, w, h, z) => { const d = document.createElement('div');
+      Object.assign(d.style, { position:'absolute', left:`${x / 1920 * 100}%`, top:`${y / BOND_H * 100}%`, width:`${w / 1920 * 100}%`, height:`${h / BOND_H * 100}%`,
+        background:W, pointerEvents:'none', zIndex:z || 1 }); wrapBond.insertBefore(d, bondVideo); return d; };
+    const line = mk(0, 13117, 1920, 32, 1); line.style.transformOrigin = '100% 50%';
+    const items = [[223, 1], [552, 0], [881, 1], [1210, 0], [1539, 1]].map(([cx, below]) => ({
+      cx, dot: mk(cx - 16, 13115, 32, 36, 2),
+      text: below ? mk(cx - 16, 13192, 300, 104, 2) : mk(cx - 16, 12972, 320, 102, 2), below }));
+    const all = [line, ...items.flatMap(o => [o.dot, o.text])];
+    let played = false;
+    return {
+      top: 12972,
+      reset(){ played = false; all.forEach(d => { d.style.transition = 'none'; d.style.opacity = 1; d.style.transform = 'none'; }); },
+      play(){
+        if (played) return; played = true;
+        const SWEEP = 1700;
+        requestAnimationFrame(() => {
+          line.style.transition = `transform ${SWEEP}ms linear`; line.style.transform = 'scaleX(0)';
+          items.forEach((o, i) => {
+            const t = Math.max(0, (o.cx - 20) / 1920 * SWEEP);   // 선이 그 점에 닿는 순간
+            o.dot.style.transition = `opacity .35s ease ${t}ms, transform .5s cubic-bezier(.2,.7,.2,1) ${t}ms`;
+            o.dot.style.opacity = 0; o.dot.style.transform = 'scale(.2)';
+            o.text.style.transition = `opacity .7s ease ${t + 180}ms, transform .9s cubic-bezier(.2,.7,.2,1) ${t + 180}ms`;
+            o.text.style.opacity = 0; o.text.style.transform = `translateY(${o.below ? '35%' : '-35%'})`;
+          });
+        });
+      }
+    };
+  })();
   function bondCheck(){
     if (wrapBond.hidden) return;
+    { const k0 = wrapBond.clientWidth / 1920, b0 = (detail.scrollTop + detail.clientHeight * .75) / k0, t0 = detail.scrollTop / k0;
+      if (TL.top < b0) TL.play(); }
     const k = wrapBond.clientWidth / 1920, bottom = (detail.scrollTop + detail.clientHeight * .85) / k, top = detail.scrollTop / k;
     wipes.forEach(w => {
       if (w.done) return;
@@ -1366,7 +1398,7 @@
       }
     });
   }
-  function bondReset(){ wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ TL.reset(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
