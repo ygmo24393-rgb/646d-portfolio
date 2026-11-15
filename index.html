@@ -1898,11 +1898,11 @@
       + `<div class="scr" style="${P(SX, SY, SW, SH)};border-radius:calc(${r} / 1920 * 100vw)">`
       + `<img src="bond-reg0.webp" alt="" style="left:0">`
       + `<div class="dim" style="position:absolute;left:0;top:0;width:100%;height:${SPLIT / 874.45 * 100}%;overflow:hidden;opacity:0"><img src="bond-reg1.webp" alt="" style="position:absolute;left:0;top:0;width:100%;height:${874.45 / SPLIT * 100}%"></div>`
-      + `<div class="sht" style="position:absolute;left:0;top:${SPLIT / 874.45 * 100}%;width:100%;height:${(874.45 - SPLIT) / 874.45 * 100}%;overflow:hidden;transform:translateY(105%)"><img src="bond-reg1.webp" alt="" style="position:absolute;left:0;top:${-SPLIT / (874.45 - SPLIT) * 100}%;width:100%;height:${874.45 / (874.45 - SPLIT) * 100}%">${svgSel}</div>`
+      + `<div class="sht" style="position:absolute;left:0;top:${SPLIT / 874.45 * 100}%;width:100%;height:${(874.45 - SPLIT) / 874.45 * 100}%;overflow:hidden;transform:translateY(105%)"><img src="bond-reg1.webp" alt="" style="position:absolute;left:0;top:${-SPLIT / (874.45 - SPLIT) * 100}%;width:100%;height:${874.45 / (874.45 - SPLIT) * 100}%"><img class="v" src="bond-reg1v.webp" alt="" style="position:absolute;left:0;top:${-SPLIT / (874.45 - SPLIT) * 100}%;width:100%;height:${874.45 / (874.45 - SPLIT) * 100}%;opacity:0;transition:opacity .3s ease"></div>`
       + `<img class="cam" src="bond-reg2.webp" alt="" style="left:0;transform:translateX(100%)">`
       + `<div class="tap"></div></div>` + phIsland(SX, SY, SW, SH, CX, CY, CW, CH);
     wrapBond.insertBefore(card, bondVideo);
-    const dim = card.querySelector('.dim'), sht = card.querySelector('.sht'), tap = card.querySelector('.tap'), s1 = card.querySelector('.s1'), s2 = card.querySelector('.s2'), cam = card.querySelector('.cam');
+    const dim = card.querySelector('.dim'), sht = card.querySelector('.sht'), tap = card.querySelector('.tap'), vimg = card.querySelector('.sht .v'), s1 = { setAttribute(){} }, s2 = { setAttribute:(k, o) => { vimg.style.opacity = o; } }, cam = card.querySelector('.cam');
     const camGo = on => { cam.style.transition = 'transform .65s cubic-bezier(.65,0,.35,1)'; cam.style.transform = on ? 'translateX(0)' : 'translateX(100%)'; };
     let run = 0, fingerOn = false;
     const sleep = (ms, tok) => new Promise((res, rej) => setTimeout(() => tok === run ? res() : rej('stop'), ms));
@@ -2192,15 +2192,15 @@
     const play = () => sws.forEach((g, i) => tm.push(setTimeout(() => {
       g.style.opacity = 1;
       // 색이 칸 왼쪽에서 오른쪽으로 채워짐 (튀지 않게)
-      g.animate([{ clipPath:'inset(0 100% 0 0)', opacity:.6 }, { clipPath:'inset(0 0% 0 0)', opacity:1 }], { duration:1000, easing:'cubic-bezier(.65,0,.35,1)' });
-    }, 150 + i * 120)));
+      g.animate([{ clipPath:'inset(0 100% 0 0)', opacity:.6 }, { clipPath:'inset(0 0% 0 0)', opacity:1 }], { duration:600, easing:'cubic-bezier(.65,0,.35,1)' });
+    }, i * 60)));
     const area = { top:20342, h:900 };
     let on = false;
     const sync = () => {
       const open = detail.classList.contains('open') && !wrapBond.hidden;
       const R = wrapBond.getBoundingClientRect(), k = R.width / 1920, vh = detail.clientHeight;
       const top = R.top + area.top * k, bot = top + area.h * k;
-      if (open && top < vh * 0.72 && bot > vh * 0.2) { if (!on) { on = true; play(); } }
+      if (open && top < vh * 0.85 && bot > vh * 0.15) { if (!on) { on = true; play(); } }
       else if (!open || bot < -40 || top > vh + 40) { if (on) { on = false; init(); } }
     };
     detail.addEventListener('scroll', () => requestAnimationFrame(sync), { passive:true });
