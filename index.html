@@ -37,7 +37,7 @@
   #detail .veil:not(.on){opacity:0}
   #detail .dwrap{position:relative}
   #detail .dwrap[hidden]{display:none}
-  #bondImg{display:block;width:100%;height:auto;aspect-ratio:1920/45925;background:#0C0C10}
+  #bondImg{display:block;width:100%;height:auto;aspect-ratio:1920/43385;background:#0C0C10}
   #proj #card2,#proj #card5{cursor:pointer}
   /* 영상의 어두운 배경을 섹션 배경에 녹임: 'lighten'은 더 밝은 쪽만 보여서, 브라우저마다 영상 색이 달라도 경계가 생기지 않음 */
   #wrapBond .bvid{position:absolute;display:block;object-fit:cover;cursor:pointer;background:transparent;mix-blend-mode:lighten}
@@ -275,7 +275,7 @@
     <img id="bondImg" alt="BON-D — 프로젝트 상세" decoding="async">
     <!-- BON-D 로고 모션 : 마우스를 올리면 재생 -->
     <video id="bondVideo" class="bvid" src="bond-logo.mp4" poster="bond-logo-poster.jpg" muted playsinline preload="metadata" loop
-           style="left:0;top:calc(16420/45925*100%);width:100%;height:calc(1048/45925*100%)"></video>
+           style="left:0;top:calc(16420/43385*100%);width:100%;height:calc(1048/43385*100%)"></video>
   </div>
 </div>
 <button id="detailClose" type="button" aria-label="Back"><svg class="ar" viewBox="0 0 20 16" width="1.15em" height=".92em" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="square"><path d="M19 8H2M8.5 1.5L2 8l6.5 6.5"/></svg>BACK</button>
@@ -1405,7 +1405,7 @@
   bondVideo.addEventListener('click', () => { bondVideo.paused ? bondVideo.play().catch(() => {}) : bondVideo.pause(); });
 
   // 2) 스크롤: 사진이 화면에 들어오면 같은 배경색 막이 위로 걷히며 드러남
-  const BOND_H = 45925, WIPES = [];   // 사진이 배경색 막에서 걷히며 나타나던 효과는 뺌 (요청)
+  const BOND_H = 43385,   /* 끝 여백 줄임 (원래 45925) */ WIPES = [];   // 사진이 배경색 막에서 걷히며 나타나던 효과는 뺌 (요청)
   const wipes = WIPES.map(r => {
     const d = document.createElement('div'); d.className = 'wipe';
     Object.assign(d.style, { left:`${r.x / 1920 * 100}%`, top:`${r.y / BOND_H * 100}%`, width:`${r.w / 1920 * 100}%`, height:`${r.h / BOND_H * 100}%`, background:r.bg });
@@ -2188,8 +2188,8 @@
     Object.assign(v.style, { left:`${x / 1920 * 100}%`, top:`${y / H * 100}%`, width:`${w / 1920 * 100}%`, height:`${h / H * 100}%`, background:bg });
     wrap.appendChild(v); return v;
   };
-  const veils = { pyeojin: mkVeil(wrapPy, 60, 191, 1800, 1016, 16220, '#FAFAFA'), bond: mkVeil(wrapBond, 60, 191, 1800, 1198, 45925, '#F7F7F8'), ambit: mkVeil(wrapAmbit, 60, 184, 1800, 981, 17807, '#151515') };
-  wrapBond.style.setProperty('--oy', (680 / 45925 * 100) + '%');
+  const veils = { pyeojin: mkVeil(wrapPy, 60, 191, 1800, 1016, 16220, '#FAFAFA'), bond: mkVeil(wrapBond, 60, 191, 1800, 1198, 43385, '#F7F7F8'), ambit: mkVeil(wrapAmbit, 60, 184, 1800, 981, 17807, '#151515') };
+  wrapBond.style.setProperty('--oy', (680 / 43385 * 100) + '%');
   wrapPy.style.setProperty('--oy', (680 / 16220 * 100) + '%');
   wrapAmbit.style.setProperty('--oy', (650 / 17807 * 100) + '%');
   function playEntry(wrap, veil){
