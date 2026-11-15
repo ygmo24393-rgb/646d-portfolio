@@ -1627,6 +1627,8 @@
     const CHK = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#2089F9"/><path d="M${cx - r * .42} ${cy + r * .02}l${r * .3} ${r * .3} ${r * .55} -${r * .62}" stroke="white" stroke-width="${r * .18}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
     // 처음엔 비활성(회색) 버튼으로 덮어두고, 선택이 끝나면 걷어내 파란 버튼이 켜지게
     const DIS = (x, y, w, h, label) => `<g class="dis"><rect x="${x - .8}" y="${y - .8}" width="${w + 1.6}" height="${h + 1.6}" rx="15.6" fill="#292A33"/><text x="${x + w / 2}" y="${y + h / 2 + 6}" text-anchor="middle" fill="#8A8B96" font-size="17" font-weight="600" ${FONT}>${label}</text></g>`;
+    // 버튼 글자를 원래 화면 이미지에서 그대로 잘라 색만 바꿔 씀 → 활성/비활성 글자 크기·글꼴이 똑같음
+    const IMGBTN = (src, x, y, w, h, filt) => `<g clip-path="url(#onbBtnClip)"><image href="${src}" x="0" y="0" width="402.2" height="874.45" preserveAspectRatio="none" filter="url(#${filt})"/></g>`;
     const PRS = (x, y, w, h, rx) => `<rect class="prs" x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="#000" opacity="0"/>`;
     const OV = [
       PRS(20, 390, 362, 58, 10),
@@ -1638,9 +1640,9 @@
       + `<rect class="cv" x="36" y="507" width="66" height="32" fill="#111216" opacity="0"/><text class="tx" x="40" y="532" fill="white" font-size="17" font-weight="600" ${FONT}></text>`
       + `<rect class="cv" x="104" y="507" width="232" height="32" fill="#111216" opacity="0"/><text class="tx" x="108" y="532" fill="white" font-size="19" font-weight="500" ${FONT}></text>`
       + `<g class="ck" opacity="0">${CHK(32, 612, 12)}</g>`
-      + `<g class="btn" opacity="0"><rect x="17" y="765" width="368" height="60" rx="15" fill="#2089F9"/><text x="201" y="801" text-anchor="middle" fill="white" font-size="17" font-weight="600" ${FONT}>본인 인증하기</text></g>`
+      + `<g class="btn" opacity="0">${IMGBTN('bond-onb2.webp', 0, 0, 0, 0, 'onbBlue')}</g>`
       + PRS(17, 765, 368, 60, 15),
-      [326, 418, 602, 694].map(y => `<g class="ck" opacity="0">${CHK(350, y, 12)}</g>`).join('') + DIS(17, 765, 368, 60, '선택한 자산 연결하기') + PRS(17, 765, 368, 60, 15),
+      [326, 418, 602, 694].map(y => `<g class="ck" opacity="0">${CHK(350, y, 12)}</g>`).join('') + `<g class="dis">${IMGBTN('bond-onb3.webp', 0, 0, 0, 0, 'onbGray')}</g>` + PRS(17, 765, 368, 60, 15),
       PRS(17, 765, 368, 60, 15),
       `<rect class="fl" x="20" y="380" width="362" height="310" rx="15" fill="white" opacity="0"/>` + PRS(20, 724, 176, 60, 15),
       // 로고: 인스타·유튜브·iCloud는 처음에 흐리게(다른 로고처럼 40%) → 누르면 원래 색으로, 페이스북은 진한 로고를 겹쳐 켬
@@ -1657,7 +1659,7 @@
       inner += `<div class="pg" data-n="${n}" style="position:absolute;top:0;height:100%;width:100%;left:${j * 100}%"><img alt="" src="${SRC(j)}" style="left:0">`
         + `<svg viewBox="0 0 402.2 874.45" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">${OV[n]}</svg></div>`;
     }
-    box.innerHTML = inner + `</div><div class="tap"></div></div>` + phIsland(FX_ + SX, FY + SY, SW, SH, FX_, FY, FW, FH);
+    box.innerHTML = `<svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><clipPath id="onbBtnClip"><rect x="16.2" y="764.2" width="369.6" height="61.6" rx="15.6"/></clipPath><filter id="onbGray" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".1563 .5259 .0531 0 -.192  .1563 .5259 .0531 0 -.188  .1593 .5360 .0541 0 -.161  0 0 0 1 0"/></filter><filter id="onbBlue" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values=".4883 1.6429 .1658 0 -.256  .2583 .8690 .0877 0 .335  .0134 .0451 .0045 0 .966  0 0 0 1 0"/></filter></defs></svg>` + inner + `</div><div class="tap"></div></div>` + phIsland(FX_ + SX, FY + SY, SW, SH, FX_, FY, FW, FH);
     { // 뒤에 깔린 원래 디자인의 폰 윗부분이 새 프레임 위로 살짝 보이던 것 가리기
       const cv = document.createElement('div');
       Object.assign(cv.style, { position:'absolute', zIndex:3, pointerEvents:'none', background:'#0C0B0F', left:`${700 / 1920 * 100}%`, top:`${23752 / BOND_H * 100}%`, width:`${520 / 1920 * 100}%`, height:`${60 / BOND_H * 100}%` });
@@ -1693,6 +1695,7 @@
     };
     const pop = el => { el.setAttribute('opacity', 1); el.style.transformBox = 'fill-box'; el.style.transformOrigin = 'center';
       el.animate([{ transform:'scale(.3)' }, { transform:'scale(1.15)' }, { transform:'scale(1)' }], { duration:380, easing:'cubic-bezier(.3,1.4,.5,1)' }); };
+    const enableNow = pg => pg.querySelector('.dis').animate([{ opacity:1 }, { opacity:0 }], { duration:350, fill:'forwards' });
     const enable = async (pg, tok) => { const d = pg.querySelector('.dis'); d.animate([{ opacity:1 }, { opacity:0 }], { duration:350, fill:'forwards' }); await sleep(500, tok); };
     const type = async (el, str, tok) => { for (const ch of str) { el.textContent += ch; await sleep(ch === '-' ? 60 : 95, tok); } };
     const resetPage = pg => pg.querySelectorAll('svg *').forEach(e => {
@@ -1718,9 +1721,8 @@
         await press(201, 795, tok, pg.querySelector('.prs'));
       },
       async (pg, tok) => { const c = pg.querySelectorAll('.ck'); await sleep(450, tok);
-        for (const [i, y] of [[0, 326], [1, 418], [2, 602], [3, 694]]) { await press(350, y, tok); pop(c[i]); await sleep(160, tok); }
-        await sleep(120, tok);
-        await enable(pg, tok);
+        for (const [i, y] of [[0, 326], [1, 418], [2, 602], [3, 694]]) { await press(350, y, tok); pop(c[i]); if (i === 0) enableNow(pg); await sleep(i === 0 ? 420 : 160, tok); }   // 하나만 골라도 버튼 켜짐
+        await sleep(250, tok);
         await press(201, 795, tok, pg.querySelector('.prs')); },
       async (pg, tok) => { await sleep(1100, tok); await press(201, 795, tok, pg.querySelector('.prs')); },
       async (pg, tok) => { await sleep(700, tok); await press(108, 754, tok, pg.querySelector('.prs'));
@@ -1730,10 +1732,11 @@
         const dim = pg.querySelectorAll('.dim'), lit = pg.querySelector('.lit'), lbl = pg.querySelector('.dis text');
         const on = el => el.animate([{ opacity:+el.getAttribute('opacity') }, { opacity:el.classList.contains('dim') ? 0 : 1 }], { duration:300, fill:'forwards' });
         const picks = [[61, 404, () => on(dim[0])], [154, 404, () => on(lit)], [247, 404, () => on(dim[1])], [154, 523, () => on(dim[2])]];
-        for (let i = 0; i < picks.length; i++) { const [x, y, f] = picks[i]; await press(x, y, tok); f(); pop(c[i]); lbl.textContent = `${i + 1}개의 기록 불러오기`; await sleep(200, tok); }
-        await sleep(100, tok);
-        pg.querySelector('.btn').setAttribute('opacity', 1);
-        await enable(pg, tok);
+        const btxt = pg.querySelector('.btn text');
+        for (let i = 0; i < picks.length; i++) { const [x, y, f] = picks[i]; await press(x, y, tok); f(); pop(c[i]); lbl.textContent = btxt.textContent = `${i + 1}개의 기록 불러오기`;
+          if (i === 0) { pg.querySelector('.btn').setAttribute('opacity', 1); enableNow(pg); }   // 하나만 골라도 버튼 켜짐
+          await sleep(i === 0 ? 420 : 200, tok); }
+        await sleep(250, tok);
         await press(201, 751, tok, pg.querySelector('.prs')); },
       async (pg, tok) => { await sleep(1300, tok); await press(201, 795, tok, pg.querySelector('.prs')); },
     ];
