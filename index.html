@@ -82,6 +82,9 @@
   #hdr.on{opacity:1}
   #hdr .nav{pointer-events:auto;cursor:pointer}
   body.lock #hdr{opacity:0}
+  .bdOnb .tap{position:absolute;z-index:5;width:15%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.32);box-shadow:0 0 0 2px rgba(255,255,255,.55), 0 6px 18px rgba(0,0,0,.35);opacity:0;pointer-events:none}
+  .bdOnb .tapR{position:absolute;z-index:4;width:15%;aspect-ratio:1;border-radius:50%;border:2px solid rgba(255,255,255,.7);pointer-events:none}
+
   /* 온보딩: 뒤 폰 화면 흐름은 원본처럼 흐리게(40%), 가운데 목업 폰 화면이 단계별로 넘어감 */
   .bdMarq .trk{opacity:.4}
   .bdOnb{position:absolute;pointer-events:none;z-index:3}   /* 아래 코인 섹션보다 위에 → 폰 아래쪽 안 잘림 */
@@ -1556,7 +1559,10 @@
     Object.assign(box.style, { left:`${FX_ / 1920 * 100}%`, top:`${FY / BOND_H * 100}%`, width:`${FW / 1920 * 100}%`, height:`${FH / BOND_H * 100}%` });
     let inner = `<div class="scr" style="left:${SX / FW * 100}%;top:${SY / FH * 100}%;width:${SW / FW * 100}%;height:${SH / FH * 100}%;border-radius:calc(${60 * k} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`;
     for (let j = -1; j <= N + 1; j++) inner += `<img alt="" src="${SRC(j)}" style="left:${j * 100}%">`;
-    box.innerHTML = inner + `</div></div><img class="frm" src="bond-rec-frame.webp" alt="">`;
+    box.innerHTML = inner + `</div><div class="tap"></div></div><img class="frm" src="bond-rec-frame.webp" alt="">`;
+    const tap = box.querySelector('.tap');
+    // 화면별로 누를 버튼 위치 (화면 402×874 기준): 로그인→네이버, STEP1~3→하단 버튼, STEP4→촬영하기, STEP5→기록 불러오기, 완료→확인하기
+    const TAPS = [[201, 420], [201, 794], [201, 794], [201, 794], [108, 754], [201, 750], [201, 794]];
     wrapBond.insertBefore(box, bondVideo);
     const it = box.querySelector('.itrk');
     let step = 0, t = 0;
@@ -1565,11 +1571,29 @@
       it.style.transition = tr;
       it.style.transform = `translateX(${-step * 100}%)`;
     };
-    const next = () => {
+    // 가상의 손가락: 버튼 위에 나타나 꾹 누르고 → 물결 → 다음 화면으로
+    const press = (cb) => {
+      const [x, y] = TAPS[step % N];
+      Object.assign(tap.style, { left:`${x / 402.2 * 100}%`, top:`${y / 874.45 * 100}%` });
+      tap.getAnimations().forEach(a => a.cancel());
+      tap.animate([
+        { opacity:0, transform:'translate(-50%,-50%) scale(1.5)' },
+        { opacity:1, transform:'translate(-50%,-50%) scale(1)', offset:.35 },
+        { opacity:1, transform:'translate(-50%,-50%) scale(.78)', offset:.6 },
+        { opacity:1, transform:'translate(-50%,-50%) scale(.95)', offset:.8 },
+        { opacity:0, transform:'translate(-50%,-50%) scale(1)' }
+      ], { duration:900, easing:'ease-out' });
+      const r = document.createElement('div'); r.className = 'tapR';
+      Object.assign(r.style, { left:tap.style.left, top:tap.style.top });
+      tap.parentNode.appendChild(r);
+      r.animate([{ opacity:.8, transform:'translate(-50%,-50%) scale(.4)' }, { opacity:0, transform:'translate(-50%,-50%) scale(2.6)' }], { duration:650, delay:520, easing:'cubic-bezier(.2,.8,.3,1)', fill:'both' }).onfinish = () => r.remove();
+      setTimeout(cb, 700);
+    };
+    const next = () => press(() => {
       step++; place(true);
       if (step === N) setTimeout(() => { step = 0; place(false); }, DUR + 30);   // 한 바퀴 돌면 티 안 나게 처음 위치로
       t = setTimeout(next, DUR + HOLD);
-    };
+    });
     place(false);
     return { box, start(){ clearTimeout(t); t = setTimeout(next, 1200); }, stop(){ clearTimeout(t); step = 0; place(false); } };
   })();
