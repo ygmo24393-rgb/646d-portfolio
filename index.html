@@ -2192,8 +2192,8 @@
     const play = () => sws.forEach((g, i) => tm.push(setTimeout(() => {
       g.style.opacity = 1;
       // 색이 칸 왼쪽에서 오른쪽으로 채워짐 (튀지 않게)
-      g.animate([{ clipPath:'inset(0 100% 0 0)', opacity:.6 }, { clipPath:'inset(0 0% 0 0)', opacity:1 }], { duration:600, easing:'cubic-bezier(.65,0,.35,1)' });
-    }, i * 60)));
+      g.animate([{ opacity:0 }, { opacity:1 }], { duration:380, easing:'ease-out' });   // 칸 전체가 한 번에 채워짐 (방향 없이)
+    }, i * 90)));
     const area = { top:20342, h:900 };
     let on = false;
     const sync = () => {
