@@ -1770,7 +1770,66 @@
     return { box:card, start(){ run++; reset(); loop(run); }, stop(){ run++; reset(); } };
   })();
   live(INH.box, () => INH.start(), () => INH.stop());
-  bdVid('13ca69858c4d8c9b9193e9f1fa9194f9c1dad53f', [964, 31552, 894, 1137], [1136, 31581, 550, 1080], 35);    // 상속도 오른쪽 폰
+  // 상속도 오른쪽 폰: 자산 유형 → 자산 선택 → 비율 입력 → 금액 입력 → 연결하기 (가상 사용자가 차례로 진행, 반복)
+  const INR = (() => {
+    const CX = 964, CY = 31597, CW = 894, CH = 1137;
+    const SW = 470, SH = SW * 874.45 / 402.2, SX = 1411 - SW / 2, SY = 31654.9, r = SW / 402.2 * 56;
+    const P = (x, y, w, h) => `left:${(x - CX) / CW * 100}%;top:${(y - CY) / CH * 100}%;width:${w / CW * 100}%;height:${h / CH * 100}%`;
+    const card = document.createElement('div'); card.className = 'bdClip bdOnb';
+    Object.assign(card.style, { left:`${CX / 1920 * 100}%`, top:`${CY / BOND_H * 100}%`, width:`${CW / 1920 * 100}%`, height:`${CH / BOND_H * 100}%`, borderRadius:`calc(35 / 1920 * 100vw)`, background:'#fff', zIndex:2 });
+    const FONT = `font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"`;
+    const VAL = cls => `<rect x="200" y="404" width="160" height="36" fill="#111216"/><text class="${cls}" x="349" y="430" text-anchor="end" fill="white" font-size="25" font-weight="500" ${FONT}></text><rect class="cur" x="352" y="410" width="2" height="24" fill="#2089F9"/>`;
+    const PRS = (x, y, w, h, rx) => `<rect class="prs" x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="#fff" opacity="0"/>`;
+    const page = (left, img, ov = '') => `<div class="pg" style="position:absolute;top:0;width:100%;height:100%;left:${left}%"><img src="${img}" alt="" style="left:0">`
+      + `<svg viewBox="0 0 402.2 874.45" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">${ov}</svg></div>`;
+    card.innerHTML = phFrame(SX, SY, SW, SH, r, CX, CY, CW, CH)
+      + `<div class="scr" style="${P(SX, SY, SW, SH)};border-radius:calc(${r} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`
+      + page(0, 'bond-inr1.webp') + page(100, 'bond-inr2.webp')
+      + page(200, 'bond-inr3.webp', VAL('v1'))
+      + `<div class="pg p32" style="position:absolute;top:0;width:100%;height:100%;left:200%;opacity:0"><img src="bond-inr4.webp" alt="" style="left:0"><svg viewBox="0 0 402.2 874.45" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%">${VAL('v2')}</svg></div>`
+      + page(300, 'bond-inr5.webp') + page(400, 'bond-inr1.webp')
+      + `</div><div class="tap"></div></div>` + phIsland(SX, SY, SW, SH, CX, CY, CW, CH);
+    wrapBond.insertBefore(card, bondVideo);
+    const it = card.querySelector('.itrk'), tap = card.querySelector('.tap'), p32 = card.querySelector('.p32');
+    const v1 = card.querySelector('.v1'), v2 = card.querySelector('.v2'), curs = [...card.querySelectorAll('.cur')];
+    curs.forEach(c => c.animate([{ opacity:1 }, { opacity:1, offset:.5 }, { opacity:0, offset:.51 }, { opacity:0 }], { duration:1000, iterations:Infinity }));
+    let run = 0, idx = 0;
+    const sleep = (ms, tok) => new Promise((res, rej) => setTimeout(() => tok === run ? res() : rej('stop'), ms));
+    const pct = (x, y) => ({ left:`${x / 402.2 * 100}%`, top:`${y / 874.45 * 100}%` });
+    let fingerOn = false;
+    const press = async (x, y, tok) => {
+      if (!fingerOn) { tap.style.transition = 'none'; Object.assign(tap.style, pct(x, y)); void tap.offsetWidth; tap.style.transition = 'opacity .25s'; tap.style.opacity = 1; fingerOn = true; await sleep(280, tok); }
+      else { tap.style.transition = 'left .38s cubic-bezier(.45,0,.25,1), top .38s cubic-bezier(.45,0,.25,1)'; Object.assign(tap.style, pct(x, y)); await sleep(400, tok); }
+      tap.animate([{ transform:'translate(-50%,-50%) scale(1)' }, { transform:'translate(-50%,-50%) scale(.72)' }, { transform:'translate(-50%,-50%) scale(1)' }], { duration:260 });
+      await sleep(280, tok);
+    };
+    const off = () => { tap.style.transition = 'opacity .3s'; tap.style.opacity = 0; fingerOn = false; };
+    const go = (n, anim = true) => { idx = n; it.style.transition = anim ? 'transform 850ms cubic-bezier(.65,0,.35,1)' : 'none'; it.style.transform = `translateX(${-n * 100}%)`; };
+    const KEY = { '1':[66,626], '2':[200,626], '3':[334,626], '4':[66,688], '5':[200,688], '6':[334,688], '7':[66,752], '8':[200,752], '9':[334,752], '00':[66,814], '0':[200,814] };
+    const typeKeys = async (keys, el, fmt, tok) => { let raw = ''; for (const k of keys) { await press(...KEY[k], tok); raw += k; el.textContent = fmt(raw); await sleep(120, tok); } };
+    const reset = () => { off(); go(0, false); p32.style.opacity = 0; v1.textContent = '0 %'; v2.textContent = '0원'; };
+    const loop = async tok => {
+      try {
+        await sleep(600, tok);
+        while (tok === run) {
+          await sleep(700, tok); await press(201, 438, tok); off(); go(1); await sleep(1100, tok);            // 투자성
+          await press(201, 518, tok); off(); go(2); await sleep(1100, tok);                                    // 현대차
+          await typeKeys(['1', '8', '9', '6'], v1, s => (s.length > 2 ? s.slice(0, 2) + '.' + s.slice(2) : s) + ' %', tok);   // 비율 18.96%
+          await sleep(500, tok);
+          await press(346, 348, tok);                                                                         // ⇄ 금액으로 전환
+          p32.animate([{ opacity:0 }, { opacity:1 }], { duration:350, fill:'forwards' }); p32.style.opacity = 1; await sleep(500, tok);
+          await typeKeys(['3', '1', '00', '00', '00'], v2, s => Number(s).toLocaleString('ko-KR') + '원', tok);   // 31,000,000원
+          await sleep(500, tok);
+          await press(201, 566, tok); off(); go(3); await sleep(1100, tok);                                    // 다음
+          await sleep(900, tok); await press(201, 794, tok); off(); go(4); await sleep(950, tok);             // 연결하기 → 처음으로
+          p32.getAnimations().forEach(a => a.cancel()); p32.style.opacity = 0; v1.textContent = '0 %'; v2.textContent = '0원'; go(0, false);
+        }
+      } catch (e) {}
+    };
+    reset();
+    return { box:card, start(){ run++; reset(); loop(run); }, stop(){ run++; reset(); } };
+  })();
+  live(INR.box, () => INR.start(), () => INR.stop());
   bdVid('9cd0e4483e24ac0c6e6f1b3b8dd434306805a42d', [60, 35468, 885, 1090], [258, 35524, 489, 978], 35);       // 기록함
   bdVid('0b33831c9f3214ac3551eb49cd104e003020007f', [975, 36590, 885, 706], [1438, 36721, 378, 169], 21);      // 손 + 팝업
   bdVids.forEach(v => live(v.parentElement, () => { if (v.preload !== 'auto') v.preload = 'auto'; v.play().catch(() => {}); }, () => v.pause()));
