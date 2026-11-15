@@ -1575,10 +1575,10 @@
       + `<g class="ck" opacity="0">${CHK(32, 612, 12)}</g>`
       + `<g class="btn" opacity="0"><rect x="17" y="765" width="368" height="60" rx="15" fill="#2089F9"/><text x="201" y="801" text-anchor="middle" fill="white" font-size="17" font-weight="600" ${FONT}>본인 인증하기</text></g>`
       + PRS(17, 765, 368, 60, 15),
-      `<g class="ck" opacity="0">${CHK(350, 326, 12)}</g><g class="ck" opacity="0">${CHK(350, 510, 12)}</g>` + DIS(17, 765, 368, 60, '선택한 자산 연결하기') + PRS(17, 765, 368, 60, 15),
+      [326, 418, 602, 694].map(y => `<g class="ck" opacity="0">${CHK(350, y, 12)}</g>`).join('') + DIS(17, 765, 368, 60, '선택한 자산 연결하기') + PRS(17, 765, 368, 60, 15),
       PRS(17, 765, 368, 60, 15),
       `<rect class="fl" x="20" y="380" width="362" height="310" rx="15" fill="white" opacity="0"/>` + PRS(20, 724, 176, 60, 15),
-      `<g class="ck" opacity="0">${CHK(361, 383, 9)}</g><g class="ck" opacity="0">${CHK(82, 502, 9)}</g>` + DIS(16, 721, 368, 60, '3개의 기록 불러오기') + PRS(16, 721, 368, 60, 15),
+      [[82, 383], [268, 383], [175, 502]].map(([x, y]) => `<g class="ck" opacity="0">${CHK(x, y, 9)}</g>`).join('') + DIS(16, 721, 368, 60, '3개의 기록 불러오기') + PRS(16, 721, 368, 60, 15),
       PRS(17, 765, 368, 60, 15),
     ];
     let inner = `<div class="scr" style="left:${SX / FW * 100}%;top:${SY / FH * 100}%;width:${SW / FW * 100}%;height:${SH / FH * 100}%;border-radius:calc(${60 * k} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`;
@@ -1641,14 +1641,17 @@
         await press(201, 795, tok, pg.querySelector('.prs'));
       },
       async (pg, tok) => { const c = pg.querySelectorAll('.ck'); await sleep(450, tok);
-        await press(350, 326, tok); pop(c[0]); await sleep(220, tok); await press(350, 510, tok); pop(c[1]); await sleep(250, tok);
+        for (const [i, y] of [[0, 326], [1, 418], [2, 602], [3, 694]]) { await press(350, y, tok); pop(c[i]); await sleep(160, tok); }
+        await sleep(120, tok);
         await enable(pg, tok);
         await press(201, 795, tok, pg.querySelector('.prs')); },
       async (pg, tok) => { await sleep(1100, tok); await press(201, 795, tok, pg.querySelector('.prs')); },
       async (pg, tok) => { await sleep(700, tok); await press(108, 754, tok, pg.querySelector('.prs'));
         pg.querySelector('.fl').animate([{ opacity:0 }, { opacity:.85 }, { opacity:0 }], { duration:420, easing:'ease-out' }); await sleep(380, tok); },
       async (pg, tok) => { const c = pg.querySelectorAll('.ck'); await sleep(450, tok);
-        await press(340, 404, tok); pop(c[0]); await sleep(220, tok); await press(61, 523, tok); pop(c[1]); await sleep(250, tok);
+        // 인스타그램 · 유튜브 · iCloud만 선택
+        for (const [i, x, y] of [[0, 61, 404], [1, 247, 404], [2, 154, 523]]) { await press(x, y, tok); pop(c[i]); await sleep(180, tok); }
+        await sleep(100, tok);
         await enable(pg, tok);
         await press(201, 751, tok, pg.querySelector('.prs')); },
       async (pg, tok) => { await sleep(1300, tok); await press(201, 795, tok, pg.querySelector('.prs')); },
