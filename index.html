@@ -901,6 +901,51 @@
     const ambSpCheck = () => { const k = detailSvg.clientWidth / 1920; if (!k) return; const mid = (detail.scrollTop + detail.clientHeight * .6) / k;
       ambSp.forEach(o => { if (!o.auto && o.top < mid){ o.auto = true; o.play(true); setTimeout(() => o.play(false), 2600); } }); };
     detail.addEventListener('scroll', () => { if (!wrapAmbit.hidden) requestAnimationFrame(ambSpCheck); }, { passive:true });
+
+    // LINE HEIGHT 카드 4장 (편진고딕과 같은 인터랙션): 마우스가 닿으면 행간이 초록 띠로 왼쪽부터 펼쳐지고 % 숫자가 초록으로 / 스크롤하면 카드마다 다른 속도로 움직임
+    { const NS = 'http://www.w3.org/2000/svg', GRN = '#02D6AC';
+      const bbOf = n => { try { return n.getBBox(); } catch(e){ return null; } };
+      const paths = [...svg.querySelectorAll('path')].filter(n => !n.closest('defs,mask,clipPath'));
+      const cards = [...svg.querySelectorAll('rect[width="426"][height="590"][fill="white"]')].filter(n => !n.closest('defs,mask,clipPath')).map(r => ({ r, b: bbOf(r) })).filter(o => o.b);
+      const setT = (el, tr) => { const base = el.dataset.t0 !== undefined ? el.dataset.t0 : (el.dataset.t0 = el.getAttribute('transform') || ''); el.setAttribute('transform', (base + ' ' + tr).trim()); };
+      const parts = cards.sort((a, b) => a.b.x - b.b.x).map((c, i) => {
+        const ps = paths.filter(p => { const b = bbOf(p); return b && b.width > 0 && b.x >= c.b.x && b.x + b.width <= c.b.x + c.b.width && b.y >= c.b.y && b.y + b.height <= c.b.y + c.b.height; });
+        const els = [c.r, ...ps];
+        const body = ps.slice().sort((p, q) => bbOf(q).height - bbOf(p).height)[0], label = ps.find(p => p !== body);
+        if (body){
+          const tmp = document.createElementNS(NS, 'path'); body.parentNode.appendChild(tmp);
+          const pcs = body.getAttribute('d').split(/(?=M)/).filter(Boolean).map(d => { tmp.setAttribute('d', d); const q = tmp.getBBox(); return { y: q.y, y1: q.y + q.height, cy: q.y + q.height / 2, x: q.x, x1: q.x + q.width }; });
+          tmp.remove(); pcs.sort((p, q) => p.cy - q.cy);
+          const lines = [];
+          pcs.forEach(o => { const L = lines[lines.length - 1]; if (L && o.cy - L.cy < 9){ L.items.push(o); L.cy = (L.cy * (L.items.length - 1) + o.cy) / L.items.length; } else lines.push({ cy: o.cy, items: [o] }); });
+          lines.forEach(L => { const ys = L.items.map(o => o.y).sort((a, b) => a - b), y1s = L.items.map(o => o.y1).sort((a, b) => a - b);
+            L.top = ys[Math.floor(ys.length * .2)]; L.bot = y1s[Math.floor(y1s.length * .8)]; L.x = Math.min(...L.items.map(o => o.x)); L.x1 = Math.max(...L.items.map(o => o.x1)); });
+          const x0 = Math.min(...lines.map(L => L.x)), x1 = Math.max(...lines.map(L => L.x1)), bands = [];
+          for (let k = 0; k + 1 < lines.length; k++){
+            const r = document.createElementNS(NS, 'rect'), y = lines[k].bot + 1, h = Math.max(2, lines[k + 1].top - lines[k].bot - 2);
+            r.setAttribute('x', x0); r.setAttribute('y', y.toFixed(1)); r.setAttribute('height', h.toFixed(1)); r.setAttribute('width', 0);
+            r.setAttribute('fill', GRN); r.setAttribute('fill-opacity', .18); r.style.pointerEvents = 'none';
+            body.parentNode.insertBefore(r, body); bands.push(r); els.push(r);
+          }
+          if (label) label.style.transition = 'fill .4s ease';
+          let raf = 0, on = false, t0 = 0;
+          const W = x1 - x0, tick = n => { let mv = false;
+            bands.forEach((r, k) => { const tt = on ? Math.max(0, Math.min(1, (n - t0 - k * 70) / 420)) : Math.max(0, 1 - (n - t0) / 260);
+              r.setAttribute('width', (W * (on ? 1 - Math.pow(1 - tt, 3) : tt)).toFixed(1)); if (on ? tt < 1 : tt > 0) mv = true; });
+            raf = mv ? requestAnimationFrame(tick) : 0; };
+          const play = v => { on = v; t0 = performance.now(); if (label) label.style.fill = v ? GRN : ''; if (!raf) raf = requestAnimationFrame(tick); };
+          const h = document.createElementNS(NS, 'rect');
+          h.setAttribute('x', c.b.x); h.setAttribute('y', c.b.y); h.setAttribute('width', c.b.width); h.setAttribute('height', c.b.height); h.setAttribute('fill', 'transparent'); h.style.cursor = 'crosshair';
+          root.appendChild(h); els.push(h);
+          h.addEventListener('pointerenter', () => play(true)); h.addEventListener('pointerleave', () => play(false));
+        }
+        return { els, cy: c.b.y + c.b.height / 2, f: [.10, -.06, .14, -.03][i % 4] };
+      });
+      const lhFX = () => { const k = detailSvg.clientWidth / 1920; if (!k || wrapAmbit.hidden) return;
+        const mid = (detail.scrollTop + detail.clientHeight / 2) / k;
+        parts.forEach(c => { const d = Math.max(-900, Math.min(900, c.cy - mid)); c.els.forEach(el => setT(el, `translate(0 ${(d * c.f).toFixed(1)})`)); }); };
+      detail.addEventListener('scroll', () => requestAnimationFrame(lhFX), { passive:true }); lhFX();
+    }
     });
 
     // 0) Anatomy 라벨 5개(지시선 + 이름)를 따로 묶어 둠 → 처음엔 숨기고, 섹션이 보이면 하나씩 순서대로 등장
