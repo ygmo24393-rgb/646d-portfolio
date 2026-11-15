@@ -1977,6 +1977,33 @@
     return { box, start(){ run++; loop(run); }, stop(){ run++; reset(); caret(false); } };
   })();
   live(MSG.box, () => MSG.start(), () => MSG.stop());
+  // BITO 출처 배너: 기관 아이콘 묶음이 마우스를 부드럽게 따라 움직임 (밖으로 나가면 가운데로 복귀)
+  const GOV = (() => {
+    const BX = 60, BY = 42393, BW = 1800, BH = 290, GX = 725, GY = 42448, GW = 470, GH = 180;
+    const box = document.createElement('div'); box.className = 'bdClip';
+    Object.assign(box.style, { left:`${BX / 1920 * 100}%`, top:`${BY / BOND_H * 100}%`, width:`${BW / 1920 * 100}%`, height:`${BH / BOND_H * 100}%`, borderRadius:`calc(30 / 1920 * 100vw)`, zIndex:2 });
+    box.innerHTML = `<img src="bond-gov-bg.webp" alt="" style="position:absolute;inset:0;width:100%;height:100%">`
+      + `<img class="g" src="bond-gov-g.webp" alt="" style="position:absolute;left:${(GX - BX) / BW * 100}%;top:${(GY - BY) / BH * 100}%;width:${GW / BW * 100}%;height:${GH / BH * 100}%;will-change:transform">`;
+    wrapBond.insertBefore(box, bondVideo);
+    const g = box.querySelector('.g');
+    let tx = 0, ty = 0, x = 0, y = 0, raf = 0;
+    const MX = 520, MY = 38;
+    const onMove = e => {
+      const r = box.getBoundingClientRect(), k = r.width / BW;
+      const inside = e.clientX > r.left && e.clientX < r.right && e.clientY > r.top - 60 * k && e.clientY < r.bottom + 60 * k;
+      if (!inside) { tx = ty = 0; return; }
+      const dx = (e.clientX - (r.left + r.width / 2)) / k, dy = (e.clientY - (r.top + r.height / 2)) / k;
+      tx = Math.max(-MX, Math.min(MX, dx * .62)); ty = Math.max(-MY, Math.min(MY, dy * .4));
+    };
+    const tick = () => {
+      x += (tx - x) * .06; y += (ty - y) * .06;
+      g.style.transform = `translate(${x / GW * 100}%, ${y / GH * 100}%)`;
+      raf = requestAnimationFrame(tick);
+    };
+    return { box, start(){ if (!raf) { addEventListener('mousemove', onMove, { passive:true }); raf = requestAnimationFrame(tick); } },
+      stop(){ cancelAnimationFrame(raf); raf = 0; removeEventListener('mousemove', onMove); tx = ty = x = y = 0; g.style.transform = ''; } };
+  })();
+  live(GOV.box, () => GOV.start(), () => GOV.stop());
   bdVids.forEach(v => live(v.parentElement, () => { if (v.preload !== 'auto') v.preload = 'auto'; v.play().catch(() => {}); }, () => v.pause()));
   // 기록함 카드 캐러셀 (원본 사이트 인터랙션: 4초마다 다음 화면으로, 탭 알약이 따라 이동)
   const REC = (() => {
