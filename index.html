@@ -6,6 +6,7 @@
 <title>646D — Portfolio</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
 <link href="https://fonts.googleapis.com/css2?family=Asta+Sans:wght@300..800&display=swap" rel="stylesheet">
 <style>
   /* 영문: Creato Display (임베드) / 한글: Asta Sans */
@@ -1932,6 +1933,50 @@
   })();
   live(REG.box, () => REG.start(), () => REG.stop());
   bdVid('0b33831c9f3214ac3551eb49cd104e003020007f', [975, 36590, 885, 706], [1438, 36721, 378, 169], 21);      // 손 + 팝업
+  // 기록함 오른쪽 아래 메시지 입력창: 커서 깜빡 → 한 글자씩(자모 조합) 타이핑 → 글자 수 올라감 → 지우고 반복
+  const MSG = (() => {
+    const s = 377 / 362, X = 1438.5 - s, Y = 36721 + DY - s, W = 364 * s, H = 165 * s;
+    const u = v => `calc(${v * s} / 1920 * 100vw)`;
+    const box = document.createElement('div'); box.className = 'bdMsg';
+    Object.assign(box.style, { position:'absolute', left:`${X / 1920 * 100}%`, top:`${Y / BOND_H * 100}%`, width:`${W / 1920 * 100}%`, height:`${H / BOND_H * 100}%`, zIndex:2, pointerEvents:'none' });
+    box.innerHTML = `<svg viewBox="0 0 364 165" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible"><rect x="1" y="1" width="362" height="163" rx="20" fill="#111216"/><rect x="1.5" y="1.5" width="361" height="162" rx="19.5" fill="none" stroke="#2089F9"/></svg>`
+      + `<div class="tx" style="position:absolute;left:${26.4 / 364 * 100}%;top:${23.5 / 165 * 100}%;width:${312 / 364 * 100}%;font:400 ${u(14)}/${u(21)} 'Pretendard Variable',Pretendard,'Asta Sans',sans-serif;letter-spacing:-.01em;color:#E9EAEF;word-break:keep-all;white-space:pre-wrap"><span class="ph" style="color:#8A8B96;position:absolute;left:0;top:0;white-space:nowrap">데이터와 함께 전하고 싶은 말을 적어요.</span><span class="ty"></span><i class="cur" style="display:inline-block;width:${u(1.2)};height:${u(16)};background:#fff;vertical-align:-.17em;margin-left:${u(.6)};position:relative;left:${u(-3)}"></i></div>`
+      + `<div class="cnt" style="position:absolute;right:${(364 - 340.4) / 364 * 100}%;bottom:${(165 - 138.2) / 165 * 100}%;font:400 ${u(12)}/1 'Pretendard Variable',Pretendard,'Asta Sans',sans-serif;color:#595A66;font-variant-numeric:tabular-nums">0/1000</div>`;
+    wrapBond.insertBefore(box, bondVideo);
+    const tx = box.querySelector('.tx'), ph = box.querySelector('.ph'), ty = box.querySelector('.ty'), cur = box.querySelector('.cur'), cnt = box.querySelector('.cnt');
+    const TEXT = '아빠가 남긴 기록들이 너희에게 따뜻한 위로가 되길 바란다. 늘 고맙고, 많이 사랑한다.';
+    const CHO = 'ㄱㄲㄴㄷㄸㄹㅁㅂㅃㅅㅆㅇㅈㅉㅊㅋㅌㅍㅎ';
+    const steps = ch => {   // 한글 한 글자를 입력 중 모습(초성 → 초+중 → 완성)으로
+      const c = ch.charCodeAt(0) - 0xAC00;
+      if (c < 0 || c > 11171) return [ch];
+      const jong = c % 28, base = String.fromCharCode(0xAC00 + c - jong);
+      return [CHO[Math.floor(c / 588)], base, ...(jong ? [ch] : [])];
+    };
+    let run = 0, blink = null;
+    const sleep = (ms, tok) => new Promise((res, rej) => setTimeout(() => tok === run ? res() : rej('stop'), ms));
+    const caret = on => { blink?.cancel(); blink = on ? cur.animate([{ opacity:1 }, { opacity:1, offset:.5 }, { opacity:0, offset:.5 }, { opacity:0 }], { duration:1000, iterations:Infinity }) : null; cur.style.opacity = 1; };
+    const reset = () => { ty.textContent = ''; ty.style.opacity = 1; ph.style.opacity = 1; cur.style.left = u(-3); cnt.textContent = '0/1000'; caret(true); };
+    const loop = async tok => {
+      try {
+        while (tok === run) {
+          reset(); await sleep(1400, tok);
+          caret(false); ph.style.opacity = 0; cur.style.left = '0';
+          let done = '';
+          for (const ch of TEXT) {
+            for (const st of steps(ch)) { ty.textContent = done + st; await sleep(46 + Math.random() * 40, tok); }
+            done += ch; cnt.textContent = `${done.length}/1000`;
+            await sleep(ch === ' ' ? 40 : /[.,]/.test(ch) ? 380 : 10, tok);
+          }
+          caret(true); await sleep(2600, tok);
+          caret(false); ty.animate([{ opacity:1 }, { opacity:0 }], { duration:500, easing:'ease', fill:'forwards' }); await sleep(600, tok);
+          ty.getAnimations().forEach(a => a.cancel());
+        }
+      } catch (e) {}
+    };
+    reset(); caret(false);
+    return { box, start(){ run++; loop(run); }, stop(){ run++; reset(); caret(false); } };
+  })();
+  live(MSG.box, () => MSG.start(), () => MSG.stop());
   bdVids.forEach(v => live(v.parentElement, () => { if (v.preload !== 'auto') v.preload = 'auto'; v.play().catch(() => {}); }, () => v.pause()));
   // 기록함 카드 캐러셀 (원본 사이트 인터랙션: 4초마다 다음 화면으로, 탭 알약이 따라 이동)
   const REC = (() => {
