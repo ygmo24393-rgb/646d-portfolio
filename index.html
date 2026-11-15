@@ -1905,7 +1905,7 @@
     setInterval(sync, 600);
     return { reset(){ on = false; init(); } };
   })();
-  // 본디만의 자산 분류: 카드 4장이 왼쪽부터 차례로 아래에서 올라오며 등장 (화면에 들어올 때마다)
+  // 본디만의 자산 분류: 카드 4장이 왼쪽부터 차례로 살짝 떠오르며 차분하게 등장 (화면에 들어올 때마다)
   const ASSETS = (() => {
     const NS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(NS, 'svg');
@@ -1918,8 +1918,8 @@
     const init = () => { tm.splice(0).forEach(clearTimeout); cards.forEach(g => { g.getAnimations().forEach(a => a.cancel()); g.style.opacity = 0; }); };
     const play = () => cards.forEach((g, i) => tm.push(setTimeout(() => {
       g.style.opacity = 1;
-      g.animate([{ opacity:0, transform:'translateY(70px)' }, { opacity:1, transform:'translateY(0)' }], { duration:850, easing:'cubic-bezier(.22,.9,.3,1)' });
-    }, 100 + i * 180)));
+      g.animate([{ opacity:0, transform:'translateY(24px)' }, { opacity:1, transform:'translateY(0)' }], { duration:1100, easing:'cubic-bezier(.22,.61,.36,1)' });   // 차분하게
+    }, 100 + i * 160)));
     const area = { top:27513, h:1070 };
     let on = false;
     const sync = () => {
