@@ -1876,7 +1876,7 @@
     setInterval(sync, 600);
     return { reset(){ boxes.forEach(b => { if (b.on) { b.on = false; b.stop(); } }); } };
   };
-  // SERVICE COLOR: 색 칸이 왼쪽부터 차례로 '톡톡' 나타남 (화면에 들어올 때마다)
+  // SERVICE COLOR: 색 칸이 왼쪽부터 차례로 부드럽게 떠오르며 나타남 (화면에 들어올 때마다)
   const SWATCH = (() => {
     const NS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(NS, 'svg');
@@ -1890,8 +1890,8 @@
     const init = () => { tm.splice(0).forEach(clearTimeout); sws.forEach(g => { g.getAnimations().forEach(a => a.cancel()); g.style.opacity = 0; }); };
     const play = () => sws.forEach((g, i) => tm.push(setTimeout(() => {
       g.style.opacity = 1;
-      g.animate([{ opacity:0, transform:'scale(.82)' }, { opacity:1, transform:'scale(1.04)', offset:.65 }, { opacity:1, transform:'scale(1)' }], { duration:620, easing:'cubic-bezier(.3,1.2,.5,1)' });
-    }, 120 + i * 140)));
+      g.animate([{ opacity:0, transform:'translateY(18px)' }, { opacity:1, transform:'translateY(0)' }], { duration:900, easing:'cubic-bezier(.22,.61,.36,1)' });   // 튀지 않고 부드럽게 떠오름
+    }, 120 + i * 110)));
     const area = { top:20342, h:900 };
     let on = false;
     const sync = () => {
