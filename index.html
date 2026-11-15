@@ -1544,7 +1544,7 @@
   };
   // 화면 사각형(SVG 좌표)을 받아 그 바깥에 두른 CSS 폰 프레임 HTML (기준 상자 기준 %)
   const phFrame = (sx, sy, sw, sh, r, bx, by, bw, bh) => {
-    const b = 14 * sw / 402.2;
+    const b = 7.5 * sw / 402.2;   // 베젤을 얇게 (화면과 테두리 사이 검은 틈 최소화)
     return `<div class="phF" style="left:${(sx - b - bx) / bw * 100}%;top:${(sy - b - by) / bh * 100}%;width:${(sw + 2 * b) / bw * 100}%;height:${(sh + 2 * b) / bh * 100}%;border-radius:calc(${r + b} / 1920 * 100vw)"></div>`;
   };
   const phIsland = (sx, sy, sw, sh, bx, by, bw, bh) => {   // 다이내믹 아일랜드 (화면 402×874 기준 위치)
