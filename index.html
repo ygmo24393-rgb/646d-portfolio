@@ -1723,21 +1723,40 @@
   const DASH = (() => {
     const X = 975, Y = 29488, W = 885, H = 534;
     const box = document.createElement('div'); box.className = 'bdClip';
-    Object.assign(box.style, { left:`${X / 1920 * 100}%`, top:`${Y / BOND_H * 100}%`, width:`${W / 1920 * 100}%`, height:`${H / BOND_H * 100}%`, borderRadius:`calc(31 / 1920 * 100vw)`, zIndex:2 });
+    Object.assign(box.style, { left:`${X / 1920 * 100}%`, top:`${Y / BOND_H * 100}%`, width:`${W / 1920 * 100}%`, height:`${H / BOND_H * 100}%`, borderRadius:`calc(35 / 1920 * 100vw)`, zIndex:2, background:'#0C0C10' });
     const N = 5, TABS = [240, 323, 423, 522, 625];     // 탭 가운데 x (카드 885×534 기준)
     box.innerHTML = Array.from({ length:N }, (_, i) => `<img src="bond-dash${i}.webp" alt="" style="position:absolute;inset:0;width:100%;height:100%;opacity:${i ? 0 : 1};transition:opacity .45s ease">`).join('')
       + TABS.map((x, i) => `<div data-i="${i}" style="position:absolute;pointer-events:auto;cursor:pointer;left:${(x - 46) / W * 100}%;top:${92 / H * 100}%;width:${92 / W * 100}%;height:${38 / H * 100}%"></div>`).join('');
+    // 점 그래프(20×5)와 원형 그래프를 이미지 위에 직접 그려서, 탭이 바뀔 때 점이 차르르 켜지고 파란 호가 움직이게
+    const PCT = [100, 18, 42, 27, 13];
+    const COLS = [225, 248, 270, 293, 316, 339, 361, 384, 407, 430, 453, 475, 498, 521, 544, 567, 589, 612, 635, 658], ROWS = [303, 326, 348, 371, 393];
+    const RC = [260.25, 227.25], RR = 35.25, CIRC = 2 * Math.PI * RR;
+    let ov = `<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none">`
+      + `<circle cx="${RC[0]}" cy="${RC[1]}" r="${RR}" fill="none" stroke="#24262F" stroke-width="4.6"/>`
+      + `<circle class="arc" cx="${RC[0]}" cy="${RC[1]}" r="${RR}" fill="none" stroke="#2089F9" stroke-width="4.6" stroke-linecap="round" stroke-dasharray="${CIRC}" stroke-dashoffset="0" transform="rotate(-90 ${RC[0]} ${RC[1]})"/>`;
+    COLS.forEach(x => ROWS.forEach(y => { ov += `<circle class="dt" cx="${x}" cy="${y}" r="2.3" fill="#31384A"/>`; }));
+    box.insertAdjacentHTML('beforeend', ov + '</svg>');
     wrapBond.insertBefore(box, bondVideo);
+    const arc = box.querySelector('.arc'), dts = [...box.querySelectorAll('.dt')];   // 세로 줄 순서(위→아래, 왼→오)
+    let pctNow = 100, arcRaf = 0, dotT = [];
+    const setArc = p => arc.setAttribute('stroke-dashoffset', CIRC * (1 - p / 100) + (p >= 100 ? 0 : 0));
+    const animArc = to => { cancelAnimationFrame(arcRaf); const from = pctNow, t0 = performance.now(), T = 900;
+      const f = t => { const p = Math.min(1, (t - t0) / T), e = 1 - Math.pow(1 - p, 4); pctNow = from + (to - from) * e; setArc(pctNow); if (p < 1) arcRaf = requestAnimationFrame(f); }; arcRaf = requestAnimationFrame(f); };
+    const animDots = n => { dotT.forEach(clearTimeout); dotT = [];
+      dts.forEach(d => d.setAttribute('fill', '#31384A'));
+      const step = Math.min(14, 700 / Math.max(1, n));
+      for (let i = 0; i < n; i++) dotT.push(setTimeout(() => { const d = dts[i]; d.setAttribute('fill', '#fff'); d.animate([{ opacity:.2 }, { opacity:1 }], { duration:220 }); }, 120 + i * step)); };
+    dts.forEach(d => d.setAttribute('fill', '#fff')); setArc(100);
     const imgs = [...box.querySelectorAll('img')];
     let cur = 0, t = 0, hover = false, on = false;
-    const show = n => { if (n === cur) return; imgs[n].style.opacity = 1; imgs[cur].style.opacity = 0; cur = n; };
+    const show = n => { if (n === cur) return; imgs[n].style.opacity = 1; imgs[cur].style.opacity = 0; cur = n; animArc(PCT[n]); animDots(PCT[n]); };
     const tick = () => { clearTimeout(t); if (!on || hover) return; t = setTimeout(() => { show((cur + 1) % N); tick(); }, 2200); };
     box.querySelectorAll('[data-i]').forEach(d => {
       d.addEventListener('pointerenter', () => { hover = true; clearTimeout(t); show(+d.dataset.i); });
       d.addEventListener('click', () => show(+d.dataset.i));
     });
     box.addEventListener('pointerleave', () => { hover = false; tick(); });
-    return { box, start(){ on = true; tick(); }, stop(){ on = false; clearTimeout(t); show(0); } };
+    return { box, start(){ on = true; tick(); }, stop(){ on = false; clearTimeout(t); show(0); dotT.forEach(clearTimeout); dts.forEach(d => d.setAttribute('fill', '#fff')); cancelAnimationFrame(arcRaf); pctNow = 100; setArc(100); } };
   })();
   live(DASH.box, () => DASH.start(), () => DASH.stop());
   // 상속도 왼쪽 폰: 선명한 화면으로 교체 + 진행률 바 채워지기 → '이상원님' 카드 눌러 분배 현황 → 뒤로 (반복)
@@ -1798,7 +1817,7 @@
     const card = document.createElement('div'); card.className = 'bdClip bdOnb';
     Object.assign(card.style, { left:`${CX / 1920 * 100}%`, top:`${CY / BOND_H * 100}%`, width:`${CW / 1920 * 100}%`, height:`${CH / BOND_H * 100}%`, borderRadius:`calc(35 / 1920 * 100vw)`, background:'#fff', zIndex:2 });
     const FONT = `font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"`;
-    const VAL = cls => `<rect x="200" y="404" width="160" height="36" fill="#111216"/><text class="${cls}" x="349" y="430" text-anchor="end" fill="white" font-size="25" font-weight="500" ${FONT}></text><rect class="cur" x="352" y="410" width="2" height="24" fill="#2089F9"/>`;
+    const VAL = cls => `<rect x="200" y="404" width="160" height="36" fill="#111216"/><text class="${cls}" x="349" y="430" text-anchor="end" fill="white" font-size="25" font-weight="500" style="font-variant-numeric:tabular-nums;transform-box:fill-box" ${FONT}></text><rect class="cur" x="352" y="410" width="2" height="24" fill="#2089F9"/>`;
     const PRS = (x, y, w, h, rx) => `<rect class="prs" x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="#fff" opacity="0"/>`;
     const page = (left, img, ov = '') => `<div class="pg" style="position:absolute;top:0;width:100%;height:100%;left:${left}%"><img src="${img}" alt="" style="left:0">`
       + `<svg viewBox="0 0 402.2 874.45" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">${ov}</svg></div>`;
@@ -1837,11 +1856,12 @@
           await typeKeys(['1', '8', '9', '6'], v1, s => (s.length > 2 ? s.slice(0, 2) + '.' + s.slice(2) : s) + ' %', tok);   // 비율 18.96%
           await sleep(500, tok);
           await press(346, 348, tok);                                                                         // ⇄ 금액으로 전환
-          p32.animate([{ opacity:0 }, { opacity:1 }], { duration:350, fill:'forwards' }); p32.style.opacity = 1; await sleep(500, tok);
+          v2.textContent = '0원'; p32.animate([{ opacity:0 }, { opacity:1 }], { duration:500, easing:'ease', fill:'forwards' }); p32.style.opacity = 1; await sleep(350, tok);
           // 입력한 비율(18.96%)을 금액으로 바꿔 보여줌: 42,894,521원 × 18.96% = 8,132,801원 (숫자가 올라가며)
-          { const target = Math.round(42894521 * 0.1896), T = 800, t0 = performance.now();
-            await new Promise(res => { const f = t => { if (tok !== run) return res(); const p = Math.min(1, Math.max(0, (t - t0) / T)), e = 1 - Math.pow(1 - p, 3);
-              v2.textContent = Math.round(target * e).toLocaleString('ko-KR') + '원'; p < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); }); }
+          { const target = Math.round(42894521 * 0.1896), T = 1500, t0 = performance.now();
+            v2.animate([{ opacity:0, transform:'translateY(6px)' }, { opacity:1, transform:'translateY(0)' }], { duration:450, easing:'cubic-bezier(.22,.61,.36,1)' });
+            await new Promise(res => { const f = t => { if (tok !== run) return res(); const p = Math.min(1, Math.max(0, (t - t0) / T)), e = p === 1 ? 1 : 1 - Math.pow(2, -10 * p);   // 빠르게 다가가다 아주 천천히 멈춤
+              v2.textContent = (Math.round(target * e / 1000) * 1000 + (p === 1 ? target % 1000 : 0)).toLocaleString('ko-KR') + '원'; p < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); }); }
           await sleep(1300, tok);
           await press(201, 566, tok); off(); go(3); await sleep(1100, tok);                                    // 다음
           await sleep(900, tok); await press(201, 794, tok); off(); go(4); await sleep(950, tok);             // 연결하기 → 처음으로
