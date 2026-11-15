@@ -1719,12 +1719,32 @@
     f.innerHTML = '<filter id="bdSharp" color-interpolation-filters="sRGB"><feConvolveMatrix order="3" preserveAlpha="true" kernelMatrix="0 -0.35 0 -0.35 2.4 -0.35 0 -0.35 0"/></filter>';
     document.body.appendChild(f);
   }
-  bdVid('5d9de6a2babf845f0559999e2ad9f6ff823a071e', [975, 29443, 884, 528], [975, 29443, 884, 528], 31);       // 자산 카드
+  // 자산 대시보드 오른쪽 위 카드: ALL → 현금성 → 고정실물 → 투자성 → 안전·보장 탭이 자동으로 바뀜 (탭에 마우스를 올리면 그 탭으로, 올려둔 동안은 멈춤)
+  const DASH = (() => {
+    const X = 975, Y = 29488, W = 885, H = 534;
+    const box = document.createElement('div'); box.className = 'bdClip';
+    Object.assign(box.style, { left:`${X / 1920 * 100}%`, top:`${Y / BOND_H * 100}%`, width:`${W / 1920 * 100}%`, height:`${H / BOND_H * 100}%`, borderRadius:`calc(31 / 1920 * 100vw)`, zIndex:2 });
+    const N = 5, TABS = [240, 323, 423, 522, 625];     // 탭 가운데 x (카드 885×534 기준)
+    box.innerHTML = Array.from({ length:N }, (_, i) => `<img src="bond-dash${i}.webp" alt="" style="position:absolute;inset:0;width:100%;height:100%;opacity:${i ? 0 : 1};transition:opacity .45s ease">`).join('')
+      + TABS.map((x, i) => `<div data-i="${i}" style="position:absolute;pointer-events:auto;cursor:pointer;left:${(x - 46) / W * 100}%;top:${92 / H * 100}%;width:${92 / W * 100}%;height:${38 / H * 100}%"></div>`).join('');
+    wrapBond.insertBefore(box, bondVideo);
+    const imgs = [...box.querySelectorAll('img')];
+    let cur = 0, t = 0, hover = false, on = false;
+    const show = n => { if (n === cur) return; imgs[n].style.opacity = 1; imgs[cur].style.opacity = 0; cur = n; };
+    const tick = () => { clearTimeout(t); if (!on || hover) return; t = setTimeout(() => { show((cur + 1) % N); tick(); }, 2200); };
+    box.querySelectorAll('[data-i]').forEach(d => {
+      d.addEventListener('pointerenter', () => { hover = true; clearTimeout(t); show(+d.dataset.i); });
+      d.addEventListener('click', () => show(+d.dataset.i));
+    });
+    box.addEventListener('pointerleave', () => { hover = false; tick(); });
+    return { box, start(){ on = true; tick(); }, stop(){ on = false; clearTimeout(t); show(0); } };
+  })();
+  live(DASH.box, () => DASH.start(), () => DASH.stop());
   // 상속도 왼쪽 폰: 선명한 화면으로 교체 + 진행률 바 채워지기 → '이상원님' 카드 눌러 분배 현황 → 뒤로 (반복)
   const INH = (() => {
     const CX = 60, CY = 31600, CW = 885, CH = 1137;                 // 카드
-    const FW = 580, FL = 502.5 - FW / 2, FT = 31778, k = FW / 450.23, FH = 920.47 * k;
-    const SX = FL + 23.54 * k, SY = FT + 23.2 * k, SW = 402.2 * k, SH = 874.45 * k;
+    // 오른쪽 폰과 같은 크기·같은 높이로 맞춤 (좌우 폰 단차 없게)
+    const SW = 470, SH = SW * 874.45 / 402.2, SX = 502.5 - SW / 2, SY = 31654.9, k = SW / 402.2 * 56 / 60;
     const P = (x, y, w, h) => `left:${(x - CX) / CW * 100}%;top:${(y - CY) / CH * 100}%;width:${w / CW * 100}%;height:${h / CH * 100}%`;
     const card = document.createElement('div'); card.className = 'bdClip bdOnb';
     Object.assign(card.style, { left:`${CX / 1920 * 100}%`, top:`${CY / BOND_H * 100}%`, width:`${CW / 1920 * 100}%`, height:`${CH / BOND_H * 100}%`, borderRadius:`calc(35 / 1920 * 100vw)`, background:'#fff', zIndex:2 });
@@ -1770,7 +1790,7 @@
     return { box:card, start(){ run++; reset(); loop(run); }, stop(){ run++; reset(); } };
   })();
   live(INH.box, () => INH.start(), () => INH.stop());
-  // 상속도 오른쪽 폰: 자산 유형 → 자산 선택 → 비율 입력 → 금액 입력 → 연결하기 (가상 사용자가 차례로 진행, 반복)
+  // 상속도 오른쪽 폰: 자산 유형 → 자산 선택 → 비율 입력 → 금액으로 보기(비율만큼 환산) → 연결하기 (가상 사용자가 차례로 진행, 반복)
   const INR = (() => {
     const CX = 964, CY = 31597, CW = 894, CH = 1137;
     const SW = 470, SH = SW * 874.45 / 402.2, SX = 1411 - SW / 2, SY = 31654.9, r = SW / 402.2 * 56;
@@ -1818,8 +1838,11 @@
           await sleep(500, tok);
           await press(346, 348, tok);                                                                         // ⇄ 금액으로 전환
           p32.animate([{ opacity:0 }, { opacity:1 }], { duration:350, fill:'forwards' }); p32.style.opacity = 1; await sleep(500, tok);
-          await typeKeys(['3', '1', '00', '00', '00'], v2, s => Number(s).toLocaleString('ko-KR') + '원', tok);   // 31,000,000원
-          await sleep(500, tok);
+          // 입력한 비율(18.96%)을 금액으로 바꿔 보여줌: 42,894,521원 × 18.96% = 8,132,801원 (숫자가 올라가며)
+          { const target = Math.round(42894521 * 0.1896), T = 800, t0 = performance.now();
+            await new Promise(res => { const f = t => { if (tok !== run) return res(); const p = Math.min(1, Math.max(0, (t - t0) / T)), e = 1 - Math.pow(1 - p, 3);
+              v2.textContent = Math.round(target * e).toLocaleString('ko-KR') + '원'; p < 1 ? requestAnimationFrame(f) : res(); }; requestAnimationFrame(f); }); }
+          await sleep(1300, tok);
           await press(201, 566, tok); off(); go(3); await sleep(1100, tok);                                    // 다음
           await sleep(900, tok); await press(201, 794, tok); off(); go(4); await sleep(950, tok);             // 연결하기 → 처음으로
           p32.getAnimations().forEach(a => a.cancel()); p32.style.opacity = 0; v1.textContent = '0 %'; v2.textContent = '0원'; go(0, false);
