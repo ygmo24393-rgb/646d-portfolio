@@ -82,6 +82,13 @@
   #hdr.on{opacity:1}
   #hdr .nav{pointer-events:auto;cursor:pointer}
   body.lock #hdr{opacity:0}
+  /* 온보딩: 뒤 폰 화면 흐름은 원본처럼 흐리게(40%), 가운데 목업 폰 화면이 단계별로 넘어감 */
+  .bdMarq .trk{opacity:.4}
+  .bdOnb{position:absolute;pointer-events:none}
+  .bdOnb .scr{position:absolute;overflow:hidden;background:#0C0C10}
+  .bdOnb .scr img{position:absolute;left:0;top:0;width:100%;height:100%;display:block;will-change:transform,opacity}
+  .bdOnb .frm{position:absolute;left:0;top:0;width:100%;height:100%;display:block}
+
   /* BON-D 앞부분(UX 라이팅 전) 인터랙션 */
   .fx2{position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;overflow:visible}
   .fx2 .fxSol, .fx2 .fxPain .hit{pointer-events:all;cursor:pointer}
@@ -1536,7 +1543,44 @@
     m.innerHTML = '<div class="trk">' + [...srcs, ...srcs].map(h => `<img alt="" loading="lazy" src="${BD}/_assets/v11/${h}.png">`).join('') + '</div>';
     wrapBond.insertBefore(m, bondVideo);
   }
-  bdVid('2bf2abfad356f581725db4b6f3954e632b5a0fcf', [704, 23714, 512, 1024], [704, 23714, 512, 1024], 0);      // 온보딩 가운데 폰
+  // 온보딩 가운데 폰: 로그인 → STEP1~5 → 완료 화면이 앱처럼 옆으로 넘어가며 반복 (원본 사이트의 가운데 폰 영상 대신)
+  const ONB = (() => {
+    const FX_ = 710, FY = 23760.5, FW = 500, FH = 1022.2;            // 폰 프레임 (SVG 좌표)
+    const k = FW / 450.23;                                         // 프레임 이미지 비율
+    const SX = 23.54 * k, SY = 23.2 * k, SW = 402.2 * k, SH = 874.45 * k;
+    const box = document.createElement('div'); box.className = 'bdOnb';
+    Object.assign(box.style, { left:`${FX_ / 1920 * 100}%`, top:`${FY / BOND_H * 100}%`, width:`${FW / 1920 * 100}%`, height:`${FH / BOND_H * 100}%` });
+    const N = 7;
+    box.innerHTML = `<div class="scr" style="left:${SX / FW * 100}%;top:${SY / FH * 100}%;width:${SW / FW * 100}%;height:${SH / FH * 100}%;border-radius:calc(${60 * k} / 1920 * 100vw)">`
+      + Array.from({ length:N }, (_, i) => `<img src="bond-onb${i + 1}.webp" alt="" style="opacity:${i ? 0 : 1}">`).join('')
+      + `</div><img class="frm" src="bond-rec-frame.webp" alt="">`;
+    wrapBond.insertBefore(box, bondVideo);
+    const imgs = [...box.querySelectorAll('.scr img')];
+    let cur = 0, t = 0;
+    const EASE = 'cubic-bezier(.32,.72,0,1)';
+    const show = (n) => {
+      const a = imgs[cur], b = imgs[n];
+      if (n === 0) {                      // 마지막(완료) → 처음(로그인): 부드럽게 겹쳐 바뀜
+        b.style.opacity = 1; b.style.transform = 'none';
+        b.animate([{ opacity:0 }, { opacity:1 }], { duration:700, easing:'ease' });
+        a.animate([{ opacity:1 }, { opacity:0 }], { duration:700, easing:'ease', fill:'forwards' }).onfinish = function(){ a.style.opacity = 0; this.cancel(); };
+      } else {                            // 다음 단계: 새 화면이 오른쪽에서 밀고 들어옴
+        b.style.opacity = 1;
+        b.animate([{ transform:'translateX(100%)' }, { transform:'translateX(0)' }], { duration:650, easing:EASE });
+        a.animate([{ transform:'translateX(0)', filter:'brightness(1)' }, { transform:'translateX(-28%)', filter:'brightness(.55)' }], { duration:650, easing:EASE })
+          .onfinish = () => { a.style.opacity = 0; };
+        b.style.zIndex = 2; a.style.zIndex = 1;
+      }
+      cur = n;
+    };
+    const loop = () => { show((cur + 1) % N); t = setTimeout(loop, cur === N - 1 ? 2600 : 2000); };
+    return {
+      box,
+      start(){ clearTimeout(t); t = setTimeout(loop, 1400); },
+      stop(){ clearTimeout(t); imgs.forEach((im, i) => { im.getAnimations().forEach(a => a.cancel()); im.style.opacity = i ? 0 : 1; im.style.zIndex = ''; }); cur = 0; }
+    };
+  })();
+  live(ONB.box, () => ONB.start(), () => ONB.stop());
   bdVid('b58b3ea9ebf72778688492428264144b7c82921a', [0, 24667, 1920, 2756], [-424, 24667, 2756, 2756], 0);     // 코인
   {
     // 코인: 영상/원래 이미지의 더 어두운 배경 때문에 위아래 섹션과 단차가 보여서, 같은 바탕색 위에 '밝게' 합성 + 살짝 선명하게
