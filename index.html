@@ -82,7 +82,7 @@
   #hdr.on{opacity:1}
   #hdr .nav{pointer-events:auto;cursor:pointer}
   body.lock #hdr{opacity:0}
-  .bdOnb .tap{position:absolute;z-index:5;width:15%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.32);box-shadow:0 0 0 2px rgba(255,255,255,.55), 0 6px 18px rgba(0,0,0,.35);opacity:0;pointer-events:none}
+  .bdOnb .tap{position:absolute;z-index:5;width:11%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.38);box-shadow:0 0 0 1.5px rgba(255,255,255,.6), 0 6px 16px rgba(0,0,0,.35);opacity:0;pointer-events:none;transform:translate(-50%,-50%)}
   .bdOnb .tapR{position:absolute;z-index:4;width:15%;aspect-ratio:1;border-radius:50%;border:2px solid rgba(255,255,255,.7);pointer-events:none}
 
   /* 온보딩: 뒤 폰 화면 흐름은 원본처럼 흐리게(40%), 가운데 목업 폰 화면이 단계별로 넘어감 */
@@ -1557,45 +1557,117 @@
     const SX = 23.54 * k, SY = 23.2 * k, SW = 402.2 * k, SH = 874.45 * k;
     const box = document.createElement('div'); box.className = 'bdOnb';
     Object.assign(box.style, { left:`${FX_ / 1920 * 100}%`, top:`${FY / BOND_H * 100}%`, width:`${FW / 1920 * 100}%`, height:`${FH / BOND_H * 100}%` });
+    // 화면 위에 얹는 '가상 조작' 레이어 (화면 402×874 좌표)
+    const FONT = `font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"`;
+    const CHK = (cx, cy, r) => `<circle cx="${cx}" cy="${cy}" r="${r}" fill="#2089F9"/><path d="M${cx - r * .42} ${cy + r * .02}l${r * .3} ${r * .3} ${r * .55} -${r * .62}" stroke="white" stroke-width="${r * .18}" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`;
+    const PRS = (x, y, w, h, rx) => `<rect class="prs" x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" fill="#000" opacity="0"/>`;
+    const OV = [
+      PRS(20, 390, 362, 58, 10),
+      `<rect class="f" x="20.5" y="282.5" width="361" height="79" rx="14.5" stroke="#2089F9" stroke-width="1.5" fill="none" opacity="0"/>`
+      + `<rect class="f" x="20.5" y="383.5" width="361" height="79" rx="14.5" stroke="#2089F9" stroke-width="1.5" fill="none" opacity="0"/>`
+      + `<rect class="f" x="20.5" y="477.5" width="361" height="79" rx="14.5" stroke="#2089F9" stroke-width="1.5" fill="none" opacity="0"/>`
+      + `<rect class="cv" x="36" y="313" width="230" height="32" fill="#111216" opacity="0"/><text class="tx" x="40" y="338" fill="white" font-size="19" font-weight="500" ${FONT}></text>`
+      + `<rect class="cv" x="36" y="413" width="140" height="32" fill="#111216" opacity="0"/><text class="tx" x="40" y="438" fill="white" font-size="19" font-weight="500" ${FONT}></text>`
+      + `<rect class="cv" x="36" y="507" width="66" height="32" fill="#111216" opacity="0"/><text class="tx" x="40" y="532" fill="white" font-size="17" font-weight="600" ${FONT}></text>`
+      + `<rect class="cv" x="104" y="507" width="232" height="32" fill="#111216" opacity="0"/><text class="tx" x="108" y="532" fill="white" font-size="19" font-weight="500" ${FONT}></text>`
+      + `<g class="ck" opacity="0">${CHK(32, 612, 12)}</g>`
+      + `<g class="btn" opacity="0"><rect x="17" y="765" width="368" height="60" rx="15" fill="#2089F9"/><text x="201" y="801" text-anchor="middle" fill="white" font-size="17" font-weight="600" ${FONT}>본인 인증하기</text></g>`
+      + PRS(17, 765, 368, 60, 15),
+      `<g class="ck" opacity="0">${CHK(350, 326, 12)}</g><g class="ck" opacity="0">${CHK(350, 510, 12)}</g>` + PRS(17, 765, 368, 60, 15),
+      PRS(17, 765, 368, 60, 15),
+      `<rect class="fl" x="20" y="380" width="362" height="310" rx="15" fill="white" opacity="0"/>` + PRS(20, 724, 176, 60, 15),
+      `<g class="ck" opacity="0">${CHK(361, 383, 9)}</g><g class="ck" opacity="0">${CHK(82, 502, 9)}</g>` + PRS(16, 721, 368, 60, 15),
+      PRS(17, 765, 368, 60, 15),
+    ];
     let inner = `<div class="scr" style="left:${SX / FW * 100}%;top:${SY / FH * 100}%;width:${SW / FW * 100}%;height:${SH / FH * 100}%;border-radius:calc(${60 * k} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`;
-    for (let j = -1; j <= N + 1; j++) inner += `<img alt="" src="${SRC(j)}" style="left:${j * 100}%">`;
+    for (let j = -1; j <= N + 1; j++) {
+      const n = ((j % N) + N) % N;
+      inner += `<div class="pg" data-n="${n}" style="position:absolute;top:0;height:100%;width:100%;left:${j * 100}%"><img alt="" src="${SRC(j)}" style="left:0">`
+        + `<svg viewBox="0 0 402.2 874.45" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">${OV[n]}</svg></div>`;
+    }
     box.innerHTML = inner + `</div><div class="tap"></div></div><img class="frm" src="bond-rec-frame.webp" alt="">`;
-    const tap = box.querySelector('.tap');
-    // 화면별로 누를 버튼 위치 (화면 402×874 기준): 로그인→네이버, STEP1~3→하단 버튼, STEP4→촬영하기, STEP5→기록 불러오기, 완료→확인하기
-    const TAPS = [[201, 420], [201, 794], [201, 794], [201, 794], [108, 754], [201, 750], [201, 794]];
     wrapBond.insertBefore(box, bondVideo);
-    const it = box.querySelector('.itrk');
-    let step = 0, t = 0;
+    const tap = box.querySelector('.tap'), it = box.querySelector('.itrk');
+    const pages = [...box.querySelectorAll('.pg')];
+    let step = 0, run = 0;
     const place = (anim) => {
-      const tr = anim ? `transform ${DUR}ms ${EASE}` : 'none';
-      it.style.transition = tr;
+      it.style.transition = anim ? `transform ${DUR}ms ${EASE}` : 'none';
       it.style.transform = `translateX(${-step * 100}%)`;
     };
-    // 가상의 손가락: 버튼 위에 나타나 꾹 누르고 → 물결 → 다음 화면으로
-    const press = (cb) => {
-      const [x, y] = TAPS[step % N];
-      Object.assign(tap.style, { left:`${x / 402.2 * 100}%`, top:`${y / 874.45 * 100}%` });
-      tap.getAnimations().forEach(a => a.cancel());
-      tap.animate([
-        { opacity:0, transform:'translate(-50%,-50%) scale(1.5)' },
-        { opacity:1, transform:'translate(-50%,-50%) scale(1)', offset:.35 },
-        { opacity:1, transform:'translate(-50%,-50%) scale(.78)', offset:.6 },
-        { opacity:1, transform:'translate(-50%,-50%) scale(.95)', offset:.8 },
-        { opacity:0, transform:'translate(-50%,-50%) scale(1)' }
-      ], { duration:900, easing:'ease-out' });
-      const r = document.createElement('div'); r.className = 'tapR';
-      Object.assign(r.style, { left:tap.style.left, top:tap.style.top });
-      tap.parentNode.appendChild(r);
-      r.animate([{ opacity:.8, transform:'translate(-50%,-50%) scale(.4)' }, { opacity:0, transform:'translate(-50%,-50%) scale(2.6)' }], { duration:650, delay:520, easing:'cubic-bezier(.2,.8,.3,1)', fill:'both' }).onfinish = () => r.remove();
-      setTimeout(cb, 700);
+    // ── 가상 사용자 동작 ──
+    const sleep = (ms, tok) => new Promise((res, rej) => setTimeout(() => tok === run ? res() : rej('stop'), ms));
+    const pct = (x, y) => ({ left:`${x / 402.2 * 100}%`, top:`${y / 874.45 * 100}%` });
+    let fingerOn = false;
+    const fingerTo = async (x, y, tok) => {
+      if (!fingerOn) {
+        tap.style.transition = 'none'; Object.assign(tap.style, pct(x, y)); void tap.offsetWidth;
+        tap.style.transition = 'opacity .25s'; tap.style.opacity = 1; fingerOn = true; await sleep(260, tok);
+      } else {
+        tap.style.transition = 'left .45s cubic-bezier(.45,0,.25,1), top .45s cubic-bezier(.45,0,.25,1), opacity .25s';
+        Object.assign(tap.style, pct(x, y)); await sleep(470, tok);
+      }
     };
-    const next = () => press(() => {
-      step++; place(true);
-      if (step === N) setTimeout(() => { step = 0; place(false); }, DUR + 30);   // 한 바퀴 돌면 티 안 나게 처음 위치로
-      t = setTimeout(next, DUR + HOLD);
+    const fingerOff = () => { tap.style.transition = 'opacity .3s'; tap.style.opacity = 0; fingerOn = false; };
+    const press = async (x, y, tok, prs) => {
+      await fingerTo(x, y, tok);
+      tap.animate([{ transform:'translate(-50%,-50%) scale(1)' }, { transform:'translate(-50%,-50%) scale(.72)' }, { transform:'translate(-50%,-50%) scale(1)' }], { duration:300, easing:'ease-in-out' });
+      if (prs) prs.animate([{ opacity:0 }, { opacity:.22 }, { opacity:0 }], { duration:320, easing:'ease-in-out' });
+      await sleep(320, tok);
+    };
+    const pop = el => { el.setAttribute('opacity', 1); el.style.transformBox = 'fill-box'; el.style.transformOrigin = 'center';
+      el.animate([{ transform:'scale(.3)' }, { transform:'scale(1.15)' }, { transform:'scale(1)' }], { duration:380, easing:'cubic-bezier(.3,1.4,.5,1)' }); };
+    const type = async (el, str, tok) => { for (const ch of str) { el.textContent += ch; await sleep(ch === '-' ? 60 : 95, tok); } };
+    const resetPage = pg => pg.querySelectorAll('svg *').forEach(e => {
+      if (e.matches('.tx')) e.textContent = '';
+      if (e.matches('.f,.cv,.ck,.btn,.fl,.prs')) e.setAttribute('opacity', 0);
     });
+    const SCRIPT = [
+      async (pg, tok) => { await sleep(700, tok); await press(201, 419, tok, pg.querySelector('.prs')); },
+      async (pg, tok) => {
+        const f = pg.querySelectorAll('.f'), cv = pg.querySelectorAll('.cv'), tx = pg.querySelectorAll('.tx');
+        await sleep(350, tok);
+        await press(200, 330, tok); f[0].setAttribute('opacity', 1); cv[0].setAttribute('opacity', 1); await type(tx[0], '김본디', tok); await sleep(200, tok); f[0].setAttribute('opacity', 0);
+        await press(110, 430, tok); f[1].setAttribute('opacity', 1); cv[1].setAttribute('opacity', 1); await type(tx[1], '980315', tok); await sleep(200, tok); f[1].setAttribute('opacity', 0);
+        await press(68, 524, tok); f[2].setAttribute('opacity', 1); cv[2].setAttribute('opacity', 1); tx[2].textContent = 'SKT'; await sleep(250, tok);
+        await press(220, 524, tok); cv[3].setAttribute('opacity', 1); await type(tx[3], '010-1234-5678', tok); await sleep(200, tok); f[2].setAttribute('opacity', 0);
+        await press(32, 612, tok); pop(pg.querySelector('.ck'));
+        await sleep(250, tok);
+        pg.querySelector('.btn').animate([{ opacity:0 }, { opacity:1 }], { duration:350, fill:'forwards' }); pg.querySelector('.btn').setAttribute('opacity', 1);
+        await sleep(450, tok);
+        await press(201, 795, tok, pg.querySelector('.prs'));
+      },
+      async (pg, tok) => { const c = pg.querySelectorAll('.ck'); await sleep(450, tok);
+        await press(350, 326, tok); pop(c[0]); await sleep(220, tok); await press(350, 510, tok); pop(c[1]); await sleep(350, tok);
+        await press(201, 795, tok, pg.querySelector('.prs')); },
+      async (pg, tok) => { await sleep(1100, tok); await press(201, 795, tok, pg.querySelector('.prs')); },
+      async (pg, tok) => { await sleep(700, tok); await press(108, 754, tok, pg.querySelector('.prs'));
+        pg.querySelector('.fl').animate([{ opacity:0 }, { opacity:.85 }, { opacity:0 }], { duration:420, easing:'ease-out' }); await sleep(380, tok); },
+      async (pg, tok) => { const c = pg.querySelectorAll('.ck'); await sleep(450, tok);
+        await press(340, 404, tok); pop(c[0]); await sleep(220, tok); await press(61, 523, tok); pop(c[1]); await sleep(350, tok);
+        await press(201, 751, tok, pg.querySelector('.prs')); },
+      async (pg, tok) => { await sleep(1300, tok); await press(201, 795, tok, pg.querySelector('.prs')); },
+    ];
+    const loop = async tok => {
+      try {
+        await sleep(700, tok);
+        while (tok === run) {
+          const pg = pages[step + 1];            // pages[0]은 j=-1
+          resetPage(pg);
+          await SCRIPT[step % N](pg, tok);
+          fingerOff();
+          step++; place(true);
+          await sleep(DUR + 120, tok);
+          if (step === N) { step = 0; place(false); }
+          resetPage(pages[step]);               // 방금 지나간 화면은 원래대로
+        }
+      } catch (e) {}
+    };
     place(false);
-    return { box, start(){ clearTimeout(t); t = setTimeout(next, 1200); }, stop(){ clearTimeout(t); step = 0; place(false); } };
+    return {
+      box,
+      start(){ run++; loop(run); },
+      stop(){ run++; fingerOff(); step = 0; place(false); pages.forEach(resetPage); }
+    };
   })();
   live(ONB.box, () => ONB.start(), () => ONB.stop());
   bdVid('b58b3ea9ebf72778688492428264144b7c82921a', [0, 24667, 1920, 2756], [-424, 24667, 2756, 2756], 0);     // 코인
