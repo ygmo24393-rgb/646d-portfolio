@@ -1534,7 +1534,7 @@
     Object.assign(c.style, bdPct(...clip), { borderRadius:`calc(${rad} / 1920 * 100vw)` });
     const v = document.createElement('video');
     Object.assign(v, { muted:true, loop:true, playsInline:true, preload:'none' }); v.setAttribute('muted', ''); v.setAttribute('playsinline', '');
-    v.src = `${BD}/_videos/v1/${id}`;
+    v.src = /\./.test(id) ? id : `${BD}/_videos/v1/${id}`;   // 파일 이름이면 직접, 아니면 원본 사이트 영상
     Object.assign(v.style, { left:`${(box[0] - clip[0]) / clip[2] * 100}%`, top:`${(box[1] - clip[1]) / clip[3] * 100}%`, width:`${box[2] / clip[2] * 100}%`, height:`${box[3] / clip[3] * 100}%`, objectFit:fit });
     c.appendChild(v); wrapBond.insertBefore(c, bondVideo); bdVids.push(v);
   };
@@ -1690,7 +1690,7 @@
     };
   })();
   live(ONB.box, () => ONB.start(), () => ONB.stop());
-  bdVid('b58b3ea9ebf72778688492428264144b7c82921a', [0, 24667, 1920, 2756], [-424, 24667, 2756, 2756], 0);     // 코인
+  bdVid('bond-coin.mp4', [0, 24667, 1920, 2756], [-424, 24667, 2756, 2756], 0);   // 코인: 받은 영상 파일     // 코인
   {
     // 코인: 영상/원래 이미지의 더 어두운 배경 때문에 위아래 섹션과 단차가 보여서, 같은 바탕색 위에 '밝게' 합성 + 살짝 선명하게
     const v = bdVids[bdVids.length - 1], c = v.parentElement;
