@@ -1633,17 +1633,13 @@
       if (on) prog.style.transform = `scaleX(${detail.scrollTop / Math.max(1, detail.scrollHeight - detail.clientHeight)})`;
       if (active && !raf) raf = requestAnimationFrame(tick);
     }, { passive:true });
-    wrapBond.addEventListener('pointerdown', e => {
-      const R = wrapBond.getBoundingClientRect();
-      const r = document.createElement('div'); r.className = 'bdRip';
-      Object.assign(r.style, { left:`${(e.clientX - R.left) / R.width * 100}%`, top:`${(e.clientY - R.top) / R.height * 100}%` });
-      wrapBond.appendChild(r); setTimeout(() => r.remove(), 950);
-    });
+    // 클릭 물결은 뺌 (요청)
     return { off(){ active = false; glow.classList.remove('on'); prog.classList.remove('on'); els.forEach(c => { c.on = false; c.d.classList.remove('on'); }); } };
   })();
   // ── BON-D 앞부분(UX 라이팅 전) 인터랙션 ──────────────────────────────
   // 설문 숫자 또로록 · 점 채우기 · 원 커짐 / 문제 카드 호버 / 인사이트 빛 스윕 / 솔루션 원 호버 / 사진 스크롤 줌 / UX 플로우 점 이동
-  const FX2 = (() => {
+  const FX2 = { reset(){} };   // UX FLOW 앞 인터랙션 전부 뺌 (요청) — 아래는 보관용
+  const FX2_UNUSED = () => {
     const NS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'fx2');
     svg.setAttribute('viewBox', `0 0 1920 ${BOND_H}`); svg.setAttribute('preserveAspectRatio', 'none');
@@ -1726,7 +1722,7 @@
     detail.addEventListener('scroll', () => requestAnimationFrame(sync), { passive:true });
     setInterval(sync, 600);
     return { reset(){ boxes.forEach(b => { if (b.on) { b.on = false; b.stop(); } }); } };
-  })();
+  };
   function bondCheck(){
     liveSync();
     if (wrapBond.hidden) return;
