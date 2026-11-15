@@ -1876,7 +1876,7 @@
     setInterval(sync, 600);
     return { reset(){ boxes.forEach(b => { if (b.on) { b.on = false; b.stop(); } }); } };
   };
-  // SERVICE COLOR: 색 칸이 왼쪽부터 차례로 아래에서 위로 차오르며 채워짐 (화면에 들어올 때마다)
+  // SERVICE COLOR: 색 칸이 왼쪽부터 차례로, 각 칸도 왼쪽→오른쪽으로 채워짐 (화면에 들어올 때마다)
   const SWATCH = (() => {
     const NS = 'http://www.w3.org/2000/svg';
     const svg = document.createElementNS(NS, 'svg');
@@ -1890,8 +1890,8 @@
     const init = () => { tm.splice(0).forEach(clearTimeout); sws.forEach(g => { g.getAnimations().forEach(a => a.cancel()); g.style.opacity = 0; }); };
     const play = () => sws.forEach((g, i) => tm.push(setTimeout(() => {
       g.style.opacity = 1;
-      // 색이 칸 아래에서 위로 차오르듯 채워짐 (잉크가 번지듯, 튀지 않게)
-      g.animate([{ clipPath:'inset(100% 0 0 0)', opacity:.6 }, { clipPath:'inset(0% 0 0 0)', opacity:1 }], { duration:1000, easing:'cubic-bezier(.65,0,.35,1)' });
+      // 색이 칸 왼쪽에서 오른쪽으로 채워짐 (튀지 않게)
+      g.animate([{ clipPath:'inset(0 100% 0 0)', opacity:.6 }, { clipPath:'inset(0 0% 0 0)', opacity:1 }], { duration:1000, easing:'cubic-bezier(.65,0,.35,1)' });
     }, 150 + i * 120)));
     const area = { top:20342, h:900 };
     let on = false;
