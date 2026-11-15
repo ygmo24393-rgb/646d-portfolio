@@ -1882,7 +1882,55 @@
     return { box:card, start(){ run++; reset(); loop(run); }, stop(){ run++; reset(); } };
   })();
   live(INR.box, () => INR.start(), () => INR.stop());
-  bdVid('9cd0e4483e24ac0c6e6f1b3b8dd434306805a42d', [60, 35468, 885, 1090], [258, 35524, 489, 978], 35);       // 기록함
+  // 기록함 왼쪽 폰: + 누르면 '남기기 방법' 시트가 올라옴 → 영상으로 남기기 선택 → 시작하기 → 시트 내려감 (반복)
+  const REG = (() => {
+    const CX = 60, CY = 35513, CW = 885, CH = 1090;
+    const SW = 470, SH = SW * 874.45 / 402.2, SX = 502.5 - SW / 2, SY = 35547.3, r = SW / 402.2 * 56;
+    const P = (x, y, w, h) => `left:${(x - CX) / CW * 100}%;top:${(y - CY) / CH * 100}%;width:${w / CW * 100}%;height:${h / CH * 100}%`;
+    const card = document.createElement('div'); card.className = 'bdClip bdOnb';
+    Object.assign(card.style, { left:`${CX / 1920 * 100}%`, top:`${CY / BOND_H * 100}%`, width:`${CW / 1920 * 100}%`, height:`${CH / BOND_H * 100}%`, borderRadius:`calc(35 / 1920 * 100vw)`, background:'#F3F4F5', zIndex:2 });
+    const SPLIT = 404;   // 시트 위쪽(어두워진 화면) / 시트
+    const svgSel = `<svg viewBox="0 0 402.2 874.45" preserveAspectRatio="none" style="position:absolute;left:0;top:${-SPLIT / 874.45 * 100 * 874.45 / (874.45 - SPLIT)}%;width:100%;height:${874.45 / (874.45 - SPLIT) * 100}%">`
+      + `<g class="s1" opacity="0"><rect x="17.5" y="467.5" width="368.5" height="79" rx="15" fill="none" stroke="#1F2027"/><circle cx="356" cy="507" r="9" fill="#1D1E25"/><circle cx="356" cy="507" r="6.5" fill="none" stroke="#6C6C72" stroke-width="2.4"/></g>`
+      + `<g class="s2" opacity="0"><rect x="17.5" y="559.5" width="368.5" height="79" rx="15" fill="none" stroke="#2089F9"/><circle cx="356" cy="599" r="9" fill="#1D1E25"/><circle cx="356" cy="599" r="6.5" fill="none" stroke="#2089F9" stroke-width="3"/></g></svg>`;
+    card.innerHTML = phFrame(SX, SY, SW, SH, r, CX, CY, CW, CH)
+      + `<div class="scr" style="${P(SX, SY, SW, SH)};border-radius:calc(${r} / 1920 * 100vw)">`
+      + `<img src="bond-reg0.webp" alt="" style="left:0">`
+      + `<div class="dim" style="position:absolute;left:0;top:0;width:100%;height:${SPLIT / 874.45 * 100}%;overflow:hidden;opacity:0"><img src="bond-reg1.webp" alt="" style="position:absolute;left:0;top:0;width:100%;height:${874.45 / SPLIT * 100}%"></div>`
+      + `<div class="sht" style="position:absolute;left:0;top:${SPLIT / 874.45 * 100}%;width:100%;height:${(874.45 - SPLIT) / 874.45 * 100}%;overflow:hidden;transform:translateY(105%)"><img src="bond-reg1.webp" alt="" style="position:absolute;left:0;top:${-SPLIT / (874.45 - SPLIT) * 100}%;width:100%;height:${874.45 / (874.45 - SPLIT) * 100}%">${svgSel}</div>`
+      + `<div class="tap"></div></div>` + phIsland(SX, SY, SW, SH, CX, CY, CW, CH);
+    wrapBond.insertBefore(card, bondVideo);
+    const dim = card.querySelector('.dim'), sht = card.querySelector('.sht'), tap = card.querySelector('.tap'), s1 = card.querySelector('.s1'), s2 = card.querySelector('.s2');
+    let run = 0, fingerOn = false;
+    const sleep = (ms, tok) => new Promise((res, rej) => setTimeout(() => tok === run ? res() : rej('stop'), ms));
+    const pct = (x, y) => ({ left:`${x / 402.2 * 100}%`, top:`${y / 874.45 * 100}%` });
+    const press = async (x, y, tok) => {
+      if (!fingerOn) { tap.style.transition = 'none'; Object.assign(tap.style, pct(x, y)); void tap.offsetWidth; tap.style.transition = 'opacity .25s'; tap.style.opacity = 1; fingerOn = true; await sleep(280, tok); }
+      else { tap.style.transition = 'left .4s cubic-bezier(.45,0,.25,1), top .4s cubic-bezier(.45,0,.25,1)'; Object.assign(tap.style, pct(x, y)); await sleep(420, tok); }
+      tap.animate([{ transform:'translate(-50%,-50%) scale(1)' }, { transform:'translate(-50%,-50%) scale(.72)' }, { transform:'translate(-50%,-50%) scale(1)' }], { duration:260 });
+      await sleep(280, tok);
+    };
+    const off = () => { tap.style.transition = 'opacity .3s'; tap.style.opacity = 0; fingerOn = false; };
+    const sheet = up => {
+      dim.style.transition = 'opacity .45s ease'; dim.style.opacity = up ? 1 : 0;
+      sht.style.transition = `transform ${up ? 650 : 500}ms cubic-bezier(.32,.72,0,1)`; sht.style.transform = up ? 'translateY(0)' : 'translateY(105%)';
+    };
+    const reset = () => { off(); dim.style.transition = sht.style.transition = 'none'; dim.style.opacity = 0; sht.style.transform = 'translateY(105%)'; s1.setAttribute('opacity', 0); s2.setAttribute('opacity', 0); };
+    const loop = async tok => {
+      try {
+        await sleep(900, tok);
+        while (tok === run) {
+          await press(360, 178, tok); off(); sheet(true); await sleep(1100, tok);              // + → 시트
+          await press(201, 599, tok); s1.setAttribute('opacity', 1); s2.setAttribute('opacity', 1); await sleep(700, tok);   // 영상으로 남기기
+          await press(201, 795, tok); off(); sheet(false); await sleep(700, tok);             // 시작하기
+          s1.setAttribute('opacity', 0); s2.setAttribute('opacity', 0); await sleep(1600, tok);
+        }
+      } catch (e) {}
+    };
+    reset();
+    return { box:card, start(){ run++; reset(); loop(run); }, stop(){ run++; reset(); } };
+  })();
+  live(REG.box, () => REG.start(), () => REG.stop());
   bdVid('0b33831c9f3214ac3551eb49cd104e003020007f', [975, 36590, 885, 706], [1438, 36721, 378, 169], 21);      // 손 + 팝업
   bdVids.forEach(v => live(v.parentElement, () => { if (v.preload !== 'auto') v.preload = 'auto'; v.play().catch(() => {}); }, () => v.pause()));
   // 기록함 카드 캐러셀 (원본 사이트 인터랙션: 4초마다 다음 화면으로, 탭 알약이 따라 이동)
