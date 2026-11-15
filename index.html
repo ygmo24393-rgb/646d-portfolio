@@ -82,6 +82,10 @@
   #hdr.on{opacity:1}
   #hdr .nav{pointer-events:auto;cursor:pointer}
   body.lock #hdr{opacity:0}
+  /* 깔끔한 폰 프레임(CSS): 이미지 프레임의 안테나 선·카메라 섬이 화면과 겹쳐 생기던 단차 제거 */
+  .phF{position:absolute;pointer-events:none;background:#050506;
+    box-shadow:inset 0 0 0 calc(2.2 / 1920 * 100vw) #c7c8cd, inset 0 0 0 calc(3.6 / 1920 * 100vw) #6e6f75, 0 calc(30 / 1920 * 100vw) calc(60 / 1920 * 100vw) rgba(0,0,0,.18)}
+
   .bdOnb .tap{position:absolute;z-index:5;width:11%;aspect-ratio:1;border-radius:50%;background:rgba(255,255,255,.38);box-shadow:0 0 0 1.5px rgba(255,255,255,.6), 0 6px 16px rgba(0,0,0,.35);opacity:0;pointer-events:none;transform:translate(-50%,-50%)}
   .bdOnb .tapR{position:absolute;z-index:4;width:15%;aspect-ratio:1;border-radius:50%;border:2px solid rgba(255,255,255,.7);pointer-events:none}
 
@@ -1538,6 +1542,15 @@
     Object.assign(v.style, { left:`${(box[0] - clip[0]) / clip[2] * 100}%`, top:`${(box[1] - clip[1]) / clip[3] * 100}%`, width:`${box[2] / clip[2] * 100}%`, height:`${box[3] / clip[3] * 100}%`, objectFit:fit });
     c.appendChild(v); wrapBond.insertBefore(c, bondVideo); bdVids.push(v);
   };
+  // 화면 사각형(SVG 좌표)을 받아 그 바깥에 두른 CSS 폰 프레임 HTML (기준 상자 기준 %)
+  const phFrame = (sx, sy, sw, sh, r, bx, by, bw, bh) => {
+    const b = 14 * sw / 402.2;
+    return `<div class="phF" style="left:${(sx - b - bx) / bw * 100}%;top:${(sy - b - by) / bh * 100}%;width:${(sw + 2 * b) / bw * 100}%;height:${(sh + 2 * b) / bh * 100}%;border-radius:calc(${r + b} / 1920 * 100vw)"></div>`;
+  };
+  const phIsland = (sx, sy, sw, sh, bx, by, bw, bh) => {   // 다이내믹 아일랜드 (화면 402×874 기준 위치)
+    const u = sw / 402.2, w = 122 * u, h = 36 * u, x = sx + (sw - w) / 2, y = sy + 11 * u;
+    return `<div style="position:absolute;z-index:6;pointer-events:none;background:#000;left:${(x - bx) / bw * 100}%;top:${(y - by) / bh * 100}%;width:${w / bw * 100}%;height:${h / bh * 100}%;border-radius:999px"></div>`;
+  };
   // 온보딩
   //  - 뒤 줄: 첨부 화면(로그인 → STEP1~5 → 완료) 순서로 계속 흘러감, 40% 투명
   //  - 가운데 폰: 따로, 화면 두 장이 붙은 채로 한 칸씩 부드럽게 옆으로 넘어감
@@ -1586,13 +1599,18 @@
       + DIS(16, 721, 368, 60, '0개의 기록 불러오기') + PRS(16, 721, 368, 60, 15),
       PRS(17, 765, 368, 60, 15),
     ];
-    let inner = `<div class="scr" style="left:${SX / FW * 100}%;top:${SY / FH * 100}%;width:${SW / FW * 100}%;height:${SH / FH * 100}%;border-radius:calc(${60 * k} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`;
+    let inner = phFrame(FX_ + SX, FY + SY, SW, SH, 60 * k, FX_, FY, FW, FH) + `<div class="scr" style="left:${SX / FW * 100}%;top:${SY / FH * 100}%;width:${SW / FW * 100}%;height:${SH / FH * 100}%;border-radius:calc(${60 * k} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`;
     for (let j = -1; j <= N + 1; j++) {
       const n = ((j % N) + N) % N;
       inner += `<div class="pg" data-n="${n}" style="position:absolute;top:0;height:100%;width:100%;left:${j * 100}%"><img alt="" src="${SRC(j)}" style="left:0">`
         + `<svg viewBox="0 0 402.2 874.45" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%;overflow:visible">${OV[n]}</svg></div>`;
     }
-    box.innerHTML = inner + `</div><div class="tap"></div></div><img class="frm" src="bond-rec-frame.webp" alt="">`;
+    box.innerHTML = inner + `</div><div class="tap"></div></div>` + phIsland(FX_ + SX, FY + SY, SW, SH, FX_, FY, FW, FH);
+    { // 뒤에 깔린 원래 디자인의 폰 윗부분이 새 프레임 위로 살짝 보이던 것 가리기
+      const cv = document.createElement('div');
+      Object.assign(cv.style, { position:'absolute', zIndex:3, pointerEvents:'none', background:'#0C0B0F', left:`${700 / 1920 * 100}%`, top:`${23752 / BOND_H * 100}%`, width:`${520 / 1920 * 100}%`, height:`${60 / BOND_H * 100}%` });
+      wrapBond.insertBefore(cv, bondVideo);
+    }
     wrapBond.insertBefore(box, bondVideo);
     const tap = box.querySelector('.tap'), it = box.querySelector('.itrk');
     const pages = [...box.querySelectorAll('.pg')];
@@ -1711,13 +1729,13 @@
     const card = document.createElement('div'); card.className = 'bdClip bdOnb';
     Object.assign(card.style, { left:`${CX / 1920 * 100}%`, top:`${CY / BOND_H * 100}%`, width:`${CW / 1920 * 100}%`, height:`${CH / BOND_H * 100}%`, borderRadius:`calc(35 / 1920 * 100vw)`, background:'#fff', zIndex:2 });
     const FONT = `font-family="Pretendard, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif"`;
-    card.innerHTML = `<div class="scr" style="${P(SX, SY, SW, SH)};border-radius:calc(${60 * k} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`
+    card.innerHTML = phFrame(SX, SY, SW, SH, 60 * k, CX, CY, CW, CH) + `<div class="scr" style="${P(SX, SY, SW, SH)};border-radius:calc(${60 * k} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`
       + `<div class="pg" style="position:absolute;top:0;width:100%;height:100%;left:0"><img src="bond-inh-home.webp" alt="" style="left:0">`
       + `<svg viewBox="0 0 402 874" preserveAspectRatio="none" style="position:absolute;inset:0;width:100%;height:100%"><defs><linearGradient id="inhG" x1="0" x2="1"><stop offset="0" stop-color="#70D0FF"/><stop offset=".55" stop-color="#2593FF"/><stop offset="1" stop-color="#224AFE"/></linearGradient></defs>`
       + `<rect x="19.5" y="237.5" width="172" height="7" fill="#1D1E25"/><rect class="pf" x="20" y="238" width="0" height="6" rx="3" fill="url(#inhG)"/>`
       + `<rect x="86" y="215" width="36" height="17" fill="#111216"/><text class="pn" x="89" y="229.5" fill="#2089F9" font-size="15" font-weight="600" ${FONT}>0%</text></svg></div>`
       + `<div class="pg" style="position:absolute;top:0;width:100%;height:100%;left:100%"><img src="bond-inh-dist.webp" alt="" style="left:0"></div>`
-      + `</div><div class="tap"></div></div><img class="frm" src="bond-rec-frame.webp" alt="" style="${P(FL, FT, FW, FH)}">`;
+      + `</div><div class="tap"></div></div>` + phIsland(SX, SY, SW, SH, CX, CY, CW, CH);
     wrapBond.insertBefore(card, bondVideo);
     const it = card.querySelector('.itrk'), tap = card.querySelector('.tap'), pf = card.querySelector('.pf'), pn = card.querySelector('.pn');
     let run = 0;
