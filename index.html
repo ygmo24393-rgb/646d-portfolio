@@ -1578,7 +1578,12 @@
       [326, 418, 602, 694].map(y => `<g class="ck" opacity="0">${CHK(350, y, 12)}</g>`).join('') + DIS(17, 765, 368, 60, '선택한 자산 연결하기') + PRS(17, 765, 368, 60, 15),
       PRS(17, 765, 368, 60, 15),
       `<rect class="fl" x="20" y="380" width="362" height="310" rx="15" fill="white" opacity="0"/>` + PRS(20, 724, 176, 60, 15),
-      [[82, 383], [268, 383], [175, 502]].map(([x, y]) => `<g class="ck" opacity="0">${CHK(x, y, 9)}</g>`).join('') + DIS(16, 721, 368, 60, '3개의 기록 불러오기') + PRS(16, 721, 368, 60, 15),
+      // 로고: 인스타·유튜브·iCloud는 처음에 흐리게(다른 로고처럼 40%) → 누르면 원래 색으로, 페이스북은 진한 로고를 겹쳐 켬
+      [[61, 404], [247, 404], [154, 523]].map(([x, y]) => `<circle class="dim" cx="${x}" cy="${y}" r="23" fill="#111216" opacity=".62"/>`).join('')
+      + `<path class="lit" d="M156.221 404.779V417.998L149.979 418L149.978 404.778L146 404.777L146.001 400.098L149.978 400.096L149.979 397.74C149.974 397.007 150.023 396.304 150.133 395.583C150.215 395.159 150.308 394.762 150.436 394.35C150.838 393.058 151.579 391.919 152.596 391.03C153.914 389.877 155.56 389.256 157.294 389.074C158.317 388.975 159.328 388.977 160.35 389.072C160.912 389.124 161.447 389.227 162 389.387L161.999 394.578C161.008 394.251 160.045 394.192 159.045 394.244C157.764 394.337 156.784 394.967 156.406 396.223C156.288 396.641 156.226 397.054 156.225 397.498L156.22 400.097L160.979 400.096L160.979 404.778L156.221 404.779V404.779Z" fill="#1778F2" opacity="0"/>`
+      + [[82, 383], [175, 383], [268, 383], [175, 502]].map(([x, y]) => `<g class="ck" opacity="0">${CHK(x, y, 9)}</g>`).join('')
+      + `<g class="btn" opacity="0"><rect x="15.2" y="720.2" width="369.6" height="61.6" rx="15.6" fill="#2089F9"/><text x="200" y="757" text-anchor="middle" fill="white" font-size="17" font-weight="600" ${FONT}>4개의 기록 불러오기</text></g>`
+      + DIS(16, 721, 368, 60, '0개의 기록 불러오기') + PRS(16, 721, 368, 60, 15),
       PRS(17, 765, 368, 60, 15),
     ];
     let inner = `<div class="scr" style="left:${SX / FW * 100}%;top:${SY / FH * 100}%;width:${SW / FW * 100}%;height:${SH / FH * 100}%;border-radius:calc(${60 * k} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`;
@@ -1624,6 +1629,8 @@
       if (e.matches('.tx')) e.textContent = '';
       if (e.matches('.f,.cv,.ck,.btn,.fl,.prs')) e.setAttribute('opacity', 0);
       if (e.matches('.dis')) { e.getAnimations().forEach(x => x.cancel()); e.setAttribute('opacity', 1); }
+      if (e.matches('.dim,.lit')) e.getAnimations().forEach(x => x.cancel());
+      if (e.matches('.dis text') && /기록 불러오기/.test(e.textContent)) e.textContent = '0개의 기록 불러오기';
     });
     const SCRIPT = [
       async (pg, tok) => { await sleep(700, tok); await press(201, 419, tok, pg.querySelector('.prs')); },
@@ -1649,9 +1656,13 @@
       async (pg, tok) => { await sleep(700, tok); await press(108, 754, tok, pg.querySelector('.prs'));
         pg.querySelector('.fl').animate([{ opacity:0 }, { opacity:.85 }, { opacity:0 }], { duration:420, easing:'ease-out' }); await sleep(380, tok); },
       async (pg, tok) => { const c = pg.querySelectorAll('.ck'); await sleep(450, tok);
-        // 인스타그램 · 유튜브 · iCloud만 선택
-        for (const [i, x, y] of [[0, 61, 404], [1, 247, 404], [2, 154, 523]]) { await press(x, y, tok); pop(c[i]); await sleep(180, tok); }
+        // 인스타그램 · 페이스북 · 유튜브 · iCloud 선택: 누를 때마다 로고가 켜지고 체크 + 버튼 숫자 올라감
+        const dim = pg.querySelectorAll('.dim'), lit = pg.querySelector('.lit'), lbl = pg.querySelector('.dis text');
+        const on = el => el.animate([{ opacity:+el.getAttribute('opacity') }, { opacity:el.classList.contains('dim') ? 0 : 1 }], { duration:300, fill:'forwards' });
+        const picks = [[61, 404, () => on(dim[0])], [154, 404, () => on(lit)], [247, 404, () => on(dim[1])], [154, 523, () => on(dim[2])]];
+        for (let i = 0; i < picks.length; i++) { const [x, y, f] = picks[i]; await press(x, y, tok); f(); pop(c[i]); lbl.textContent = `${i + 1}개의 기록 불러오기`; await sleep(200, tok); }
         await sleep(100, tok);
+        pg.querySelector('.btn').setAttribute('opacity', 1);
         await enable(pg, tok);
         await press(201, 751, tok, pg.querySelector('.prs')); },
       async (pg, tok) => { await sleep(1300, tok); await press(201, 795, tok, pg.querySelector('.prs')); },
