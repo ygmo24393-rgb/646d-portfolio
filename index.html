@@ -132,7 +132,7 @@
   /* BON-D 원본 사이트(bon-d.figma.site) 인터랙션: 영상·마키 */
   .bdClip{position:absolute;overflow:hidden;pointer-events:none}
   .bdClip video{position:absolute;display:block}
-  .bdMarq{position:absolute;overflow:hidden;pointer-events:none;background:#0C0B0F}
+  .bdMarq{position:absolute;overflow:hidden;pointer-events:none;background:#0C0B0F;z-index:2}   /* 코인 섹션보다 위 → 아래 안 잘림 */
   .bdMarq .trk{position:absolute;top:0;left:0;height:100%;display:flex;width:max-content;animation:bdMarq 65s linear infinite}
   .bdMarq img{display:block;height:98.6%;margin-top:.37%;aspect-ratio:429/932;margin-right:calc(36 / 1920 * 100vw);border-radius:calc(53.3 / 1920 * 100vw);box-shadow:0 0 0 1px rgba(255,255,255,.5)}
   @keyframes bdMarq{to{transform:translateX(-50%)}}
@@ -1535,46 +1535,45 @@
     Object.assign(v.style, { left:`${(box[0] - clip[0]) / clip[2] * 100}%`, top:`${(box[1] - clip[1]) / clip[3] * 100}%`, width:`${box[2] / clip[2] * 100}%`, height:`${box[3] / clip[3] * 100}%`, objectFit:fit });
     c.appendChild(v); wrapBond.insertBefore(c, bondVideo); bdVids.push(v);
   };
-  {
-    // 온보딩: 폰 화면들이 옆으로 흘러가는 마키
-    const m = document.createElement('div'); m.className = 'bdMarq';
-    Object.assign(m.style, bdPct(0, 23753, 1920, 945));
-    const srcs = [1, 2, 3, 4, 5, 6, 7].map(i => `bond-onb${i}.webp`);   // 첨부한 온보딩 화면 순서대로 (로그인 → STEP1~5 → 완료)
-    m.innerHTML = '<div class="trk">' + [...srcs, ...srcs].map(f => `<img alt="" src="${f}">`).join('') + '</div>';
-    wrapBond.insertBefore(m, bondVideo);
-  }
-  // 온보딩 가운데 폰: 로그인 → STEP1~5 → 완료 화면이 앱처럼 옆으로 넘어가며 반복 (원본 사이트의 가운데 폰 영상 대신)
+  // 온보딩: 뒤의 화면 줄과 가운데 폰 화면이 '한 줄의 캐러셀'처럼 같이 한 칸씩 부드럽게 넘어감
+  //  - 뒤 줄: 첨부 화면(로그인 → STEP1~5 → 완료) 순서, 40% 투명
+  //  - 가운데 폰은 렌즈처럼 고정, 안쪽 화면도 같은 시간·같은 곡선으로 같이 밀림
   const ONB = (() => {
-    const FX_ = 710, FY = 23760.5, FW = 500, FH = 1022.2;            // 폰 프레임 (SVG 좌표)
-    const k = FW / 450.23;                                         // 프레임 이미지 비율
+    const N = 7, SRC = i => `bond-onb${(((i % N) + N) % N) + 1}.webp`;
+    const SEC_Y = 23753 + DY, SEC_H = 945, CW = 429, GAP = 36, P = CW + GAP, C0 = 960 - CW / 2;
+    const DUR = 1000, HOLD = 1700, EASE = 'cubic-bezier(.65,0,.35,1)';
+    // 뒤 줄
+    const m = document.createElement('div'); m.className = 'bdMarq';
+    Object.assign(m.style, { left:'0%', top:`${SEC_Y / BOND_H * 100}%`, width:'100%', height:`${SEC_H / BOND_H * 100}%` });
+    let row = '<div class="trk" style="animation:none;width:100%;transition:none">';
+    for (let j = -4; j <= N + 4; j++) row += `<img alt="" src="${SRC(j)}" style="position:absolute;left:${(C0 + j * P) / 1920 * 100}%;top:.37%;height:98.6%;margin:0">`;
+    m.innerHTML = row + '</div>';
+    wrapBond.insertBefore(m, bondVideo);
+    const mt = m.querySelector('.trk');
+    // 가운데 폰
+    const FX_ = 710, FY = 23760.5, FW = 500, FH = 1022.2, k = FW / 450.23;
     const SX = 23.54 * k, SY = 23.2 * k, SW = 402.2 * k, SH = 874.45 * k;
     const box = document.createElement('div'); box.className = 'bdOnb';
     Object.assign(box.style, { left:`${FX_ / 1920 * 100}%`, top:`${FY / BOND_H * 100}%`, width:`${FW / 1920 * 100}%`, height:`${FH / BOND_H * 100}%` });
-    const N = 7;
-    box.innerHTML = `<div class="scr" style="left:${SX / FW * 100}%;top:${SY / FH * 100}%;width:${SW / FW * 100}%;height:${SH / FH * 100}%;border-radius:calc(${60 * k} / 1920 * 100vw)">`
-      + Array.from({ length:N }, (_, i) => `<img src="bond-onb${i + 1}.webp" alt="" style="opacity:${i ? 0 : 1}">`).join('')
-      + `</div><img class="frm" src="bond-rec-frame.webp" alt="">`;
+    let inner = `<div class="scr" style="left:${SX / FW * 100}%;top:${SY / FH * 100}%;width:${SW / FW * 100}%;height:${SH / FH * 100}%;border-radius:calc(${60 * k} / 1920 * 100vw)"><div class="itrk" style="position:absolute;inset:0">`;
+    for (let j = -1; j <= N + 1; j++) inner += `<img alt="" src="${SRC(j)}" style="left:${j * 100}%">`;
+    box.innerHTML = inner + `</div></div><img class="frm" src="bond-rec-frame.webp" alt="">`;
     wrapBond.insertBefore(box, bondVideo);
-    const imgs = [...box.querySelectorAll('.scr img')];
-    let cur = 0, t = 0;
-    const EASE = 'cubic-bezier(.32,.72,0,1)';
-    const show = (n) => {
-      const a = imgs[cur], b = imgs[n];
-      {                                   // 새 화면이 오른쪽에서 밀고 들어옴 (완료 → 로그인도 같은 방식, 겹쳐 보이지 않게)
-        b.style.opacity = 1;
-        b.animate([{ transform:'translateX(100%)' }, { transform:'translateX(0)' }], { duration:650, easing:EASE });
-        a.animate([{ transform:'translateX(0)', filter:'brightness(1)' }, { transform:'translateX(-28%)', filter:'brightness(.55)' }], { duration:650, easing:EASE })
-          .onfinish = () => { a.style.opacity = 0; };
-        b.style.zIndex = 2; a.style.zIndex = 1;
-      }
-      cur = n;
+    const it = box.querySelector('.itrk');
+    let step = 0, t = 0;
+    const place = (anim) => {
+      const tr = anim ? `transform ${DUR}ms ${EASE}` : 'none';
+      mt.style.transition = it.style.transition = tr;
+      mt.style.transform = `translateX(${-step * P / 1920 * 100}%)`;
+      it.style.transform = `translateX(${-step * 100}%)`;
     };
-    const loop = () => { show((cur + 1) % N); t = setTimeout(loop, cur === N - 1 ? 2600 : 2000); };
-    return {
-      box,
-      start(){ clearTimeout(t); t = setTimeout(loop, 1400); },
-      stop(){ clearTimeout(t); imgs.forEach((im, i) => { im.getAnimations().forEach(a => a.cancel()); im.style.opacity = i ? 0 : 1; im.style.zIndex = ''; }); cur = 0; }
+    const next = () => {
+      step++; place(true);
+      if (step === N) setTimeout(() => { step = 0; place(false); }, DUR + 30);   // 한 바퀴 돌면 티 안 나게 처음 위치로
+      t = setTimeout(next, DUR + HOLD);
     };
+    place(false);
+    return { box, start(){ clearTimeout(t); t = setTimeout(next, 1200); }, stop(){ clearTimeout(t); step = 0; place(false); } };
   })();
   live(ONB.box, () => ONB.start(), () => ONB.stop());
   bdVid('b58b3ea9ebf72778688492428264144b7c82921a', [0, 24667, 1920, 2756], [-424, 24667, 2756, 2756], 0);     // 코인
