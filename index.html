@@ -1899,9 +1899,11 @@
       + `<img src="bond-reg0.webp" alt="" style="left:0">`
       + `<div class="dim" style="position:absolute;left:0;top:0;width:100%;height:${SPLIT / 874.45 * 100}%;overflow:hidden;opacity:0"><img src="bond-reg1.webp" alt="" style="position:absolute;left:0;top:0;width:100%;height:${874.45 / SPLIT * 100}%"></div>`
       + `<div class="sht" style="position:absolute;left:0;top:${SPLIT / 874.45 * 100}%;width:100%;height:${(874.45 - SPLIT) / 874.45 * 100}%;overflow:hidden;transform:translateY(105%)"><img src="bond-reg1.webp" alt="" style="position:absolute;left:0;top:${-SPLIT / (874.45 - SPLIT) * 100}%;width:100%;height:${874.45 / (874.45 - SPLIT) * 100}%">${svgSel}</div>`
+      + `<img class="cam" src="bond-reg2.webp" alt="" style="left:0;transform:translateX(100%)">`
       + `<div class="tap"></div></div>` + phIsland(SX, SY, SW, SH, CX, CY, CW, CH);
     wrapBond.insertBefore(card, bondVideo);
-    const dim = card.querySelector('.dim'), sht = card.querySelector('.sht'), tap = card.querySelector('.tap'), s1 = card.querySelector('.s1'), s2 = card.querySelector('.s2');
+    const dim = card.querySelector('.dim'), sht = card.querySelector('.sht'), tap = card.querySelector('.tap'), s1 = card.querySelector('.s1'), s2 = card.querySelector('.s2'), cam = card.querySelector('.cam');
+    const camGo = on => { cam.style.transition = 'transform .65s cubic-bezier(.65,0,.35,1)'; cam.style.transform = on ? 'translateX(0)' : 'translateX(100%)'; };
     let run = 0, fingerOn = false;
     const sleep = (ms, tok) => new Promise((res, rej) => setTimeout(() => tok === run ? res() : rej('stop'), ms));
     const pct = (x, y) => ({ left:`${x / 402.2 * 100}%`, top:`${y / 874.45 * 100}%` });
@@ -1916,15 +1918,16 @@
       dim.style.transition = 'opacity .45s ease'; dim.style.opacity = up ? 1 : 0;
       sht.style.transition = `transform ${up ? 650 : 500}ms cubic-bezier(.32,.72,0,1)`; sht.style.transform = up ? 'translateY(0)' : 'translateY(105%)';
     };
-    const reset = () => { off(); dim.style.transition = sht.style.transition = 'none'; dim.style.opacity = 0; sht.style.transform = 'translateY(105%)'; s1.setAttribute('opacity', 0); s2.setAttribute('opacity', 0); };
+    const reset = () => { off(); dim.style.transition = sht.style.transition = 'none'; dim.style.opacity = 0; sht.style.transform = 'translateY(105%)'; s1.setAttribute('opacity', 1); s2.setAttribute('opacity', 0); cam.style.transition = 'none'; cam.style.transform = 'translateX(100%)'; };
     const loop = async tok => {
       try {
         await sleep(900, tok);
         while (tok === run) {
           await press(360, 178, tok); off(); sheet(true); await sleep(1100, tok);              // + → 시트
-          await press(201, 599, tok); s1.setAttribute('opacity', 1); s2.setAttribute('opacity', 1); await sleep(700, tok);   // 영상으로 남기기
-          await press(201, 795, tok); off(); sheet(false); await sleep(700, tok);             // 시작하기
-          s1.setAttribute('opacity', 0); s2.setAttribute('opacity', 0); await sleep(1600, tok);
+          await press(201, 599, tok); s2.setAttribute('opacity', 1); await sleep(700, tok);   // 영상으로 남기기
+          await press(201, 795, tok); off(); camGo(true); await sleep(700, tok);             // 시작하기 → 카메라
+          sheet(false); dim.style.transition = sht.style.transition = 'none'; s2.setAttribute('opacity', 0); await sleep(2400, tok);
+          await press(20, 89, tok); off(); camGo(false); await sleep(1800, tok);           // 뒤로
         }
       } catch (e) {}
     };
