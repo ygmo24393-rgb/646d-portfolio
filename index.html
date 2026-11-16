@@ -2451,6 +2451,19 @@
       svg.appendChild(e); dots.push(e);
     }
     wrapBond.insertBefore(svg, bondVideo);
+    // 가운데 카드 점 원: 회색 점으로 시작 → 파란 점이 아래에서 위로 차오름
+    const s2 = document.createElementNS(NS, 'svg');
+    s2.setAttribute('viewBox', '806 4028.32 307 307');
+    Object.assign(s2.style, { position:'absolute', left:`${806 / 1920 * 100}%`, top:`${4028.32 / BOND_H * 100}%`, width:`${307 / 1920 * 100}%`, height:`${307 / BOND_H * 100}%`, zIndex:2, pointerEvents:'none' });
+    s2.innerHTML = '<defs>'
+      + '<pattern id="stDotG" patternUnits="userSpaceOnUse" patternTransform="matrix(5.47273 0 0 5.47273 957.676 4180)" viewBox="0 0 6 6" width="1" height="1"><circle cx="2" cy="2" r="2" fill="#D6D7DD"/></pattern>'
+      + '<pattern id="stDotB" patternUnits="userSpaceOnUse" patternTransform="matrix(5.47273 0 0 5.47273 957.676 4180)" viewBox="0 0 6 6" width="1" height="1"><circle cx="2" cy="2" r="2" fill="#2089F9"/></pattern>'
+      + '<clipPath id="stFill"><rect class="lv" x="806" y="4335.32" width="307" height="307"/></clipPath></defs>'
+      + '<circle cx="959.5" cy="4181.82" r="153" fill="white"/>'
+      + '<circle cx="959.5" cy="4181.82" r="150.5" fill="url(#stDotG)"/>'
+      + '<circle cx="959.5" cy="4181.82" r="150.5" fill="url(#stDotB)" clip-path="url(#stFill)"/>';
+    wrapBond.insertBefore(s2, bondVideo);
+    const lv = s2.querySelector('.lv');
     const nums = [[100, 292], [710, 996], [1322, 1523]].map(([x0, x1], i) => {
       const box = document.createElement('div');
       Object.assign(box.style, { position:'absolute', left:`${x0 / 1920 * 100}%`, top:`${4372 / BOND_H * 100}%`, width:`${(x1 - x0) / 1920 * 100}%`, height:`${84 / BOND_H * 100}%`, background:'#fff', overflow:'hidden', zIndex:2, pointerEvents:'none' });
@@ -2461,9 +2474,11 @@
     let on = false, timers = [];
     const hide = () => { timers.forEach(clearTimeout); timers = [];
       dots.forEach(d => { d.style.transition = 'none'; d.style.fill = '#EAEAEE'; void d.getBBox; d.style.transition = 'fill .45s cubic-bezier(.4,0,.2,1)'; });
-      nums.forEach(n => { n.getAnimations().forEach(a => a.cancel()); n.style.transform = 'translateY(100%)'; }); };
+      nums.forEach(n => { n.getAnimations().forEach(a => a.cancel()); n.style.transform = 'translateY(100%)'; });
+      lv.getAnimations().forEach(a => a.cancel()); lv.setAttribute('y', 4335.32); };
     const show = () => {
       dots.slice(0, 7).forEach((d, i) => timers.push(setTimeout(() => d.style.fill = '#2089F9', 250 + i * 120)));
+      lv.animate([{ transform:'translateY(0)' }, { transform:'translateY(-307px)' }], { duration:1600, delay:300, easing:'cubic-bezier(.45,0,.25,1)', fill:'forwards' });
       nums.forEach((n, i) => n.animate([{ transform:'translateY(100%)' }, { transform:'translateY(0)' }], { duration:900, delay:350 + i * 120, easing:'cubic-bezier(.2,.7,.2,1)', fill:'forwards' }));
     };
     const sync = () => {
