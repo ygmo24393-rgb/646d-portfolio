@@ -1204,6 +1204,27 @@
       else if (fill === 'WHITE' && bb.y > 15100 && bb.y < 15600 && bb.width > 500 && bb.height > 40) drifters.push({ p, bb, amp:45 });   // Hierarchy ×3
     });
     drifters.sort((a, b) => a.bb.y - b.bb.y).forEach((d, i) => d.dir = i % 2 ? -1 : 1);
+    // Weight Matters 3줄: 획 두께가 계속 두꺼워졌다 얇아짐 (줄마다 시차를 두고 물결처럼)
+    //  두꺼워질 땐 같은 색 외곽선을 덧대고, 얇아질 땐 배경색 외곽선으로 깎아냄 → 0을 지날 때 끊김 없음
+    { const W = drifters.filter(d => d.amp === 180).sort((a, b) => a.bb.y - b.bb.y);
+      const RANGE = [[-1.2, 4.5], [-3.5, 5.5], [-6, 3.5]];          // 줄별 (얇게, 두껍게) 한쪽 두께(px)
+      W.forEach((d, i) => { d.p.setAttribute('stroke-linejoin', 'round'); d.p.setAttribute('paint-order', 'normal'); d.r = RANGE[i] || RANGE[1]; d.ph = i * 0.9; });
+      let run = 0;
+      const tick = now => {
+        if (wrapAmbit.hidden || !detail.classList.contains('open')) { run = 0; return; }
+        const sc = scale(), top = detail.scrollTop / sc, bot = top + detail.clientHeight / sc;
+        W.forEach(d => {
+          if (d.bb.y + d.bb.height < top - 200 || d.bb.y > bot + 200) return;
+          const [lo, hi] = d.r, s = (Math.sin(now / 1000 * (2 * Math.PI / 4.2) - d.ph) + 1) / 2;   // 4.2초 주기
+          const e = lo + (hi - lo) * (s * s * (3 - 2 * s));
+          d.p.setAttribute('stroke', e >= 0 ? '#333333' : '#151515');
+          d.p.setAttribute('stroke-width', (Math.abs(e) * 2).toFixed(2));
+        });
+        run = requestAnimationFrame(tick);
+      };
+      const kick = () => { if (!run && W.length && !wrapAmbit.hidden && detail.classList.contains('open')) run = requestAnimationFrame(tick); };
+      kick(); setInterval(kick, 700);
+    }
     function drift(){
       const sc = scale(), mid = (detail.scrollTop + detail.clientHeight / 2) / sc, span = detail.clientHeight / sc;
       drifters.forEach(d => {
