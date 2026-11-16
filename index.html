@@ -43,7 +43,7 @@
   .dfoot .nm sup{font-size:.36em;vertical-align:top;position:relative;top:-.32em;margin-left:.22em;letter-spacing:0;-webkit-text-stroke:calc(.4 / 1920 * 100vw) currentColor}
   .dfoot .cp{position:absolute;right:calc(57 / 1920 * 100vw);bottom:calc(137 / 1920 * 100vw);font-size:calc(23 / 1920 * 100vw);line-height:1;letter-spacing:-.01em}
   #detail .dwrap[hidden]{display:none}
-  #bondImg{display:block;width:100%;height:auto;aspect-ratio:1920/43515;background:#0C0C10}
+  #bondImg{display:block;width:100%;height:auto;aspect-ratio:1920/43535;background:#0C0C10}
   #proj #card2,#proj #card5{cursor:pointer}
   /* 영상의 어두운 배경을 섹션 배경에 녹임: 'lighten'은 더 밝은 쪽만 보여서, 브라우저마다 영상 색이 달라도 경계가 생기지 않음 */
   #wrapBond .bvid{position:absolute;display:block;object-fit:cover;cursor:pointer;background:transparent;mix-blend-mode:lighten}
@@ -1457,7 +1457,7 @@
   bondVideo.addEventListener('click', () => { bondVideo.paused ? bondVideo.play().catch(() => {}) : bondVideo.pause(); });
 
   // 2) 스크롤: 사진이 화면에 들어오면 같은 배경색 막이 위로 걷히며 드러남
-  const BOND_H = 43515,   /* 끝 여백 줄임 (원래 45925), 섹션 위 여백 추가분 포함 */ WIPES = [];   // 사진이 배경색 막에서 걷히며 나타나던 효과는 뺌 (요청)
+  const BOND_H = 43535,   /* 끝 여백 줄임 (원래 45925), 섹션 위 여백 추가분 포함 */ WIPES = [];   // 사진이 배경색 막에서 걷히며 나타나던 효과는 뺌 (요청)
   const wipes = WIPES.map(r => {
     const d = document.createElement('div'); d.className = 'wipe';
     Object.assign(d.style, { left:`${r.x / 1920 * 100}%`, top:`${r.y / BOND_H * 100}%`, width:`${r.w / 1920 * 100}%`, height:`${r.h / BOND_H * 100}%`, background:r.bg });
@@ -2353,7 +2353,7 @@
     return { reset(){ on = false; init(); } };
   })();
   // 섹션 위 여백 추가: 온보딩 +70 · 자산 대시보드 +30 · 기록함 +30 — 그 아래 덧그림도 같이 내림 (bond.svg도 같은 자리에서 벌어짐)
-  { const CUTS = [[23380, 70], [29150, 30], [35200, 30]];
+  { const CUTS = [[23380, 70], [29150, 30], [30870, 20], [35200, 30]];   // 자산 대시보드 아래 +20
     const off = y => CUTS.reduce((s, [c, g]) => s + (y >= c ? g : 0), 0);
     for (const el of [...wrapBond.children]) {
       if (el.id === 'bondImg') continue;

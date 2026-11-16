@@ -1,5 +1,5 @@
-<svg width="1920" height="43515" viewBox="0 0 1920 43515" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
-<rect width="1920" height="43515" fill="#0C0C10"/>
+<svg width="1920" height="43535" viewBox="0 0 1920 43535" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<rect width="1920" height="43535" fill="#0C0C10"/>
 <g clip-path="url(#gap0)"><g id="gapAll"><g clip-path="url(#clip0_2801_1050)">
 <rect width="1920" height="45925" fill="#0C0C10"/>
 <rect width="1920" height="1860" fill="#F7F7F8"/>
@@ -1544,9 +1544,10 @@
 </g></g>
 <use xlink:href="#gapAll" transform="translate(0 70)" clip-path="url(#gap1)"/>
 <use xlink:href="#gapAll" transform="translate(0 100)" clip-path="url(#gap2)"/>
-<use xlink:href="#gapAll" transform="translate(0 130)" clip-path="url(#gap3)"/>
+<use xlink:href="#gapAll" transform="translate(0 120)" clip-path="url(#gap3)"/>
+<use xlink:href="#gapAll" transform="translate(0 150)" clip-path="url(#gap4)"/>
 <defs>
-<clipPath id="gap0"><rect y="0" width="1920" height="23380"/></clipPath><clipPath id="gap1"><rect y="23380" width="1920" height="5770"/></clipPath><clipPath id="gap2"><rect y="29150" width="1920" height="6050"/></clipPath><clipPath id="gap3"><rect y="35200" width="1920" height="8185"/></clipPath>
+<clipPath id="gap0"><rect y="0" width="1920" height="23380"/></clipPath><clipPath id="gap1"><rect y="23380" width="1920" height="5770"/></clipPath><clipPath id="gap2"><rect y="29150" width="1920" height="1720"/></clipPath><clipPath id="gap3"><rect y="30870" width="1920" height="4330"/></clipPath><clipPath id="gap4"><rect y="35200" width="1920" height="8185"/></clipPath>
 
 <pattern id="pattern0_2801_1050" patternContentUnits="objectBoundingBox" width="1" height="1">
 <use xlink:href="#image0_2801_1050" transform="scale(0.00248756 0.00114416)"/>
