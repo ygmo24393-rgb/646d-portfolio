@@ -2464,7 +2464,7 @@
       const c = document.createElementNS(NS, 'circle'); c.setAttribute('cx', x.toFixed(2)); c.setAttribute('cy', y.toFixed(2)); c.setAttribute('r', (S / 3).toFixed(3)); c.setAttribute('fill', '#D6D7DD');
       s2.appendChild(c); DOTS.push(c);
     }
-    wrapBond.insertBefore(s2, bondVideo);
+    // 가운데 점 원은 인터랙션 없이 원래 그림 그대로 (요청) — s2는 페이지에 넣지 않음
     // 가운데에서 바깥으로 번지듯 물듦: 점마다 거리만큼 늦게, 약간의 흔들림을 섞어 색이 스르륵 바뀜
     DOTS.forEach(c => { const d = Math.hypot(+c.getAttribute('cx') - 959.5, +c.getAttribute('cy') - 4181.82) / 150.5;
       c.dataset.dl = Math.round(Math.pow(d, .85) * 950 + Math.random() * 260); });
