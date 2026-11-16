@@ -468,8 +468,9 @@
 <g filter="url(#filter7_f_2801_1050)">
 <rect x="-212" y="39572" width="2268" height="1474" fill="url(#pattern21_2801_1050)"/>
 </g>
-<rect x="-118" y="39485" width="912" height="687" fill="url(#pattern22_2801_1050)"/>
+<rect x="-118" y="39485" width="912" height="687" fill="url(#pattern22_2801_1050)" clip-path="url(#cardPhoneCut)"/>
 </g>
+<rect x="213" y="39618" width="581" height="581" rx="35" fill="none" stroke="#0C0C10" stroke-width="2.4"/>
 <g clip-path="url(#clip17_2801_1050)">
 <rect x="60" y="42719" width="580" height="367" rx="30" fill="#111216"/>
 <rect x="16" y="42703" width="710" height="400" fill="url(#pattern23_2801_1050)" fill-opacity="0.3"/>
@@ -1547,6 +1548,7 @@
 <use xlink:href="#gapAll" transform="translate(0 120)" clip-path="url(#gap3)"/>
 <use xlink:href="#gapAll" transform="translate(0 150)" clip-path="url(#gap4)"/>
 <defs>
+<clipPath id="cardPhoneCut"><rect x="-118" y="39485" width="912" height="682"/></clipPath>
 <clipPath id="gap0"><rect y="0" width="1920" height="23380"/></clipPath><clipPath id="gap1"><rect y="23380" width="1920" height="5770"/></clipPath><clipPath id="gap2"><rect y="29150" width="1920" height="1720"/></clipPath><clipPath id="gap3"><rect y="30870" width="1920" height="4330"/></clipPath><clipPath id="gap4"><rect y="35200" width="1920" height="8185"/></clipPath>
 
 <pattern id="pattern0_2801_1050" patternContentUnits="objectBoundingBox" width="1" height="1">
