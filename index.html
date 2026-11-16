@@ -1204,26 +1204,29 @@
       else if (fill === 'WHITE' && bb.y > 15100 && bb.y < 15600 && bb.width > 500 && bb.height > 40) drifters.push({ p, bb, amp:45 });   // Hierarchy ×3
     });
     drifters.sort((a, b) => a.bb.y - b.bb.y).forEach((d, i) => d.dir = i % 2 ? -1 : 1);
-    // Weight Matters 3줄: 획 두께가 계속 두꺼워졌다 얇아짐 (줄마다 시차를 두고 물결처럼)
-    //  두꺼워질 땐 같은 색 외곽선을 덧대고, 얇아질 땐 배경색 외곽선으로 깎아냄 → 0을 지날 때 끊김 없음
+    // Weight Matters 3줄: AMBIT의 실제 굵기(Light · Regular · Bold) 글자모양으로 계속 바뀜 — 줄마다 순서를 엇갈려서
     { const W = drifters.filter(d => d.amp === 180).sort((a, b) => a.bb.y - b.bb.y);
-      const RANGE = [[-1.2, 4.5], [-3.5, 5.5], [-6, 3.5]];          // 줄별 (얇게, 두껍게) 한쪽 두께(px)
-      W.forEach((d, i) => { d.p.setAttribute('stroke-linejoin', 'round'); d.p.setAttribute('paint-order', 'normal'); d.r = RANGE[i] || RANGE[1]; d.ph = i * 0.9; });
-      let run = 0;
-      const tick = now => {
-        if (wrapAmbit.hidden || !detail.classList.contains('open')) { run = 0; return; }
-        const sc = scale(), top = detail.scrollTop / sc, bot = top + detail.clientHeight / sc;
-        W.forEach(d => {
-          if (d.bb.y + d.bb.height < top - 200 || d.bb.y > bot + 200) return;
-          const [lo, hi] = d.r, s = (Math.sin(now / 1000 * (2 * Math.PI / 4.2) - d.ph) + 1) / 2;   // 4.2초 주기
-          const e = lo + (hi - lo) * (s * s * (3 - 2 * s));
-          d.p.setAttribute('stroke', e >= 0 ? '#333333' : '#151515');
-          d.p.setAttribute('stroke-width', (Math.abs(e) * 2).toFixed(2));
+      if (W.length === 3) {
+        const NS = 'http://www.w3.org/2000/svg', src = W.map(d => ({ d: d.p.getAttribute('d'), bb: d.bb }));
+        W.forEach((d, i) => {
+          const g = document.createElementNS(NS, 'g'); d.p.parentNode.insertBefore(g, d.p);
+          const cy = d.bb.y + d.bb.height / 2;
+          d.cl = src.map((s, j) => {
+            const p = document.createElementNS(NS, 'path'); p.setAttribute('d', s.d); p.setAttribute('fill', '#333333');
+            if (j !== i) p.setAttribute('transform', `translate(${(d.bb.x - s.bb.x).toFixed(1)} ${(cy - (s.bb.y + s.bb.height / 2)).toFixed(1)})`);
+            p.style.transition = 'opacity .38s cubic-bezier(.4,0,.2,1)'; p.style.opacity = j === i ? 1 : 0;
+            g.appendChild(p); return p;
+          });
+          d.p.remove(); d.p = g; d.w = i;
         });
-        run = requestAnimationFrame(tick);
-      };
-      const kick = () => { if (!run && W.length && !wrapAmbit.hidden && detail.classList.contains('open')) run = requestAnimationFrame(tick); };
-      kick(); setInterval(kick, 700);
+        const SEQ = [0, 1, 2, 1];                  // 얇게 → 보통 → 굵게 → 보통 …
+        let n = 0;
+        setInterval(() => {
+          if (wrapAmbit.hidden || !detail.classList.contains('open')) return;
+          n++;
+          W.forEach((d, i) => { const w = SEQ[(n + [0, 1, 2][i]) % SEQ.length]; if (w === d.w) return; d.cl[d.w].style.opacity = 0; d.cl[w].style.opacity = 1; d.w = w; });
+        }, 850);
+      }
     }
     function drift(){
       const sc = scale(), mid = (detail.scrollTop + detail.clientHeight / 2) / sc, span = detail.clientHeight / sc;
