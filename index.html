@@ -1989,10 +1989,9 @@
     return { box:card, start(){ run++; reset(); loop(run); }, stop(){ run++; reset(); } };
   })();
   live(REG.box, () => REG.start(), () => REG.stop());
-  bdVid('0b33831c9f3214ac3551eb49cd104e003020007f', [975, 36590, 885, 706], [1438, 36721, 378, 169], 21);      // 손 + 팝업
   // 기록함 오른쪽 아래 메시지 입력창: 커서 깜빡 → 한 글자씩(자모 조합) 타이핑 → 글자 수 올라감 → 지우고 반복
   const MSG = (() => {
-    const s = 377 / 362, X = 1438.5 - s, Y = 36721 + DY - s, W = 364 * s, H = 165 * s;
+    const s = 378 / 362, X = 1438.5 - s, Y = 36721 + DY - s, W = 364 * s, H = 165 * s;
     const u = v => `calc(${v * s} / 1920 * 100vw)`;
     const box = document.createElement('div'); box.className = 'bdMsg';
     Object.assign(box.style, { position:'absolute', left:`${X / 1920 * 100}%`, top:`${Y / BOND_H * 100}%`, width:`${W / 1920 * 100}%`, height:`${H / BOND_H * 100}%`, zIndex:2, pointerEvents:'none' });
