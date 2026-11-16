@@ -2394,40 +2394,49 @@
     setInterval(sync, 600);
     return { reset(){ on = false; init(); } };
   })();
-  // OVERVIEW: 스크롤해서 들어오면 빛줄기와 글이 아래에서 위로 차례로 떠오름 (글은 아래에서 밀려 올라오며 드러남)
-  const OVR = (() => {
-    const BLK = [   // [파일, x, y, w, h, 지연(ms), 이동거리]
-      ['bond-ov-beam.webp', 0, 2050, 1920, 1150, 0, 60],
-      ['bond-ov-lbl.webp', 1120, 2262, 130, 32, 120, 34],
-      ['bond-ov-hd.webp', 1120, 2338, 440, 94, 220, 60],
-      ['bond-ov-bd.webp', 1120, 2830, 685, 102, 420, 60],
-    ];
-    const els = BLK.map(([src, x, y, w, h, dl, dy], i) => {
+  // 스크롤해서 들어오면 아래에서 위로 차례로 떠오름 (원래 그림은 배경색으로 덮고, 같은 자리 잘라낸 고화질 조각을 올림)
+  //  BLK: [파일, x, y, w, h, 지연(ms), 이동거리, 틀 안에서 밀려 올라오기?]
+  const RISE = (BLK, T0, T1) => {
+    const els = BLK.map(([src, x, y, w, h, dl, dy, mask]) => {
       const box = document.createElement('div');
       Object.assign(box.style, { position:'absolute', left:`${x / 1920 * 100}%`, top:`${y / BOND_H * 100}%`, width:`${w / 1920 * 100}%`, height:`${h / BOND_H * 100}%`,
-        background:'#0C0C10', overflow: i ? 'hidden' : 'visible', zIndex:2, pointerEvents:'none' });
+        background:'#0C0C10', overflow: mask ? 'hidden' : 'visible', zIndex:2, pointerEvents:'none' });
       const img = document.createElement('img'); img.src = src; img.alt = '';
       Object.assign(img.style, { position:'absolute', left:0, top:0, width:'100%', height:'100%', opacity:0, willChange:'transform, opacity' });
       box.appendChild(img); wrapBond.insertBefore(box, bondVideo);
-      return { box, img, dl, dy, h };
+      return { img, dl, dy, h };
     });
     const hide = () => els.forEach(e => { e.img.getAnimations().forEach(a => a.cancel()); e.img.style.opacity = 0; });
-    const show = () => els.forEach(e => {
-      const d = `translateY(${e.dy / e.h * 100}%)`;
-      e.img.animate([{ transform:d, opacity:0 }, { transform:'translateY(0)', opacity:1 }], { duration: e.h > 500 ? 1400 : 1000, delay:e.dl, easing:'cubic-bezier(.2,.7,.2,1)', fill:'forwards' });
-    });
+    const show = () => els.forEach(e => e.img.animate([{ transform:`translateY(${e.dy / e.h * 100}%)`, opacity:0 }, { transform:'translateY(0)', opacity:1 }],
+      { duration: e.h > 500 ? 1300 : 1000, delay:e.dl, easing:'cubic-bezier(.2,.7,.2,1)', fill:'forwards' }));
     let on = false;
     const sync = () => {
       const open = detail.classList.contains('open') && !wrapBond.hidden;
       const R = wrapBond.getBoundingClientRect(), k = R.width / 1920, vh = detail.clientHeight;
-      const top = R.top + 2262 * k, bot = R.top + 3200 * k;
+      const top = R.top + T0 * k, bot = R.top + T1 * k;
       if (open && top < vh * 0.85 && bot > 0) { if (!on) { on = true; show(); } }
-      else if (!open || top > vh + 40) { if (on) { on = false; hide(); } }   // 아래로 벗어나면 다시 준비 (위로 올라가 지나간 건 그대로)
+      else if (!open || top > vh + 40) { if (on) { on = false; hide(); } }   // 아래로 벗어나면 다시 준비
     };
     detail.addEventListener('scroll', () => requestAnimationFrame(sync), { passive:true });
     setInterval(sync, 600);
     return { reset(){ on = false; hide(); } };
-  })();
+  };
+  // OVERVIEW: 빛줄기 → OVERVIEW → 제목 → 본문
+  const OVR = RISE([
+    ['bond-ov-beam.webp', 0, 2050, 1920, 1150, 0, 60, false],
+    ['bond-ov-lbl.webp', 1120, 2262, 130, 32, 120, 34, true],
+    ['bond-ov-hd.webp', 1120, 2338, 440, 94, 220, 60, true],
+    ['bond-ov-bd.webp', 1120, 2830, 685, 102, 420, 60, true],
+  ], 2262, 3200);
+  // PAIN POINT: 사진 카드가 떠오름
+  const PAIN1 = RISE([['bond-pp-card.webp', 56, 4831, 1808, 662, 0, 70, false]], 4831, 5493);
+  // 그 아래 제목 → 카드 3장 차례로
+  const PAIN2 = RISE([
+    ['bond-pp-hd.webp', 60, 5806, 470, 104, 0, 60, true],
+    ['bond-pp-c0.webp', 55, 5994, 588, 728, 160, 70, false],
+    ['bond-pp-c1.webp', 665, 5994, 588, 728, 280, 70, false],
+    ['bond-pp-c2.webp', 1275, 5994, 588, 728, 400, 70, false],
+  ], 5806, 6722);
   // 섹션 위 여백 추가: 온보딩 +70 · 자산 대시보드 +30 · 기록함 +30 — 그 아래 덧그림도 같이 내림 (bond.svg도 같은 자리에서 벌어짐)
   { const CUTS = [[23380, 70], [29150, 30], [30870, 20], [35200, 30]];   // 자산 대시보드 아래 +20
     const off = y => CUTS.reduce((s, [c, g]) => s + (y >= c ? g : 0), 0);
@@ -2458,7 +2467,7 @@
       }
     });
   }
-  function bondReset(){ FX.off(); FX2.reset(); OVR.reset(); SWATCH.reset(); ASSETS.reset(); CHART.reset(); LIVE.forEach(o => { if (o.on) { o.on = false; o.stop(); } }); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ FX.off(); FX2.reset(); OVR.reset(); PAIN1.reset(); PAIN2.reset(); SWATCH.reset(); ASSETS.reset(); CHART.reset(); LIVE.forEach(o => { if (o.on) { o.on = false; o.stop(); } }); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
