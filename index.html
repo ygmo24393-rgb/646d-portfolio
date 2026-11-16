@@ -2305,20 +2305,30 @@
     const DEF = 1500.4, Y_DEF = yAt(DEF);
     const price = y => Math.round((115200 + (Y_DEF - y) * 180) / 100) * 100;   // 원래 위치는 정확히 115,200원, 높이에 따라 가격 계산
     const fmt = n => n.toLocaleString('ko-KR') + '원';
-    const put = x => {
+    // 막대·점은 선을 따라가고, 말풍선은 한 박자 늦게 미끄러지듯 따라감 (꺾이는 곳에서도 덜컥거리지 않게)
+    let tipX = null, tipY = null;
+    const put = (x, dt) => {
       x = Math.max(X0, Math.min(X1, x));
       const y = yAt(x);
-      bar.setAttribute('d', `M${x} 30537L${x} 30271.6`);
-      dot.setAttribute('cx', x); dot.setAttribute('cy', y);
+      bar.setAttribute('d', `M${x.toFixed(2)} 30537L${x.toFixed(2)} 30271.6`);
+      dot.setAttribute('cx', x.toFixed(2)); dot.setAttribute('cy', y.toFixed(2));
       const right = x + 17.8 + 99.8 < 1750;              // 오른쪽 끝에선 말풍선을 왼쪽으로
-      const tx = right ? x + 17.84 : x - 17.84 - 99.82, ty = Math.max(30262, Math.min(30500, y - 19.4));
-      tipR.setAttribute('x', tx); tipR.setAttribute('y', ty);
-      tipT.setAttribute('x', tx + 49.9); tipT.setAttribute('y', ty + 24.6);
+      const gx = right ? x + 17.84 : x - 17.84 - 99.82, gy = Math.max(30262, Math.min(30500, y - 19.4));
+      if (tipX === null || !dt) { tipX = gx; tipY = gy; }
+      else { const kx = 1 - Math.exp(-dt / 110), ky = 1 - Math.exp(-dt / 170); tipX += (gx - tipX) * kx; tipY += (gy - tipY) * ky; }
+      tipR.setAttribute('x', tipX.toFixed(2)); tipR.setAttribute('y', tipY.toFixed(2));
+      tipT.setAttribute('x', (tipX + 49.9).toFixed(2)); tipT.setAttribute('y', (tipY + 24.6).toFixed(2));
       tipT.textContent = fmt(price(y));
+      return Math.abs(gx - tipX) + Math.abs(gy - tipY);
     };
-    let cur = DEF, target = DEF, raf = 0;
-    const ease = () => { cur += (target - cur) * 0.22; put(cur); raf = Math.abs(target - cur) > 0.2 ? requestAnimationFrame(ease) : (put(target), 0); };
-    const go = x => { target = x; if (!raf) raf = requestAnimationFrame(ease); };
+    let cur = DEF, target = DEF, raf = 0, last = 0;
+    const ease = now => {
+      const dt = Math.min(48, now - (last || now)); last = now;
+      cur += (target - cur) * (1 - Math.exp(-dt / 150));     // 시간 기준 감쇠: 화면 주사율과 상관없이 부드럽게
+      const lag = put(cur, dt);
+      if (Math.abs(target - cur) > 0.05 || lag > 0.05) raf = requestAnimationFrame(ease); else { put(target, 0); raf = 0; last = 0; }
+    };
+    const go = x => { target = x; if (!raf) { last = 0; raf = requestAnimationFrame(ease); } };
     hit.addEventListener('pointermove', e => { const r = hit.getBoundingClientRect(); go(1262 + (e.clientX - r.left) / r.width * 496); });
     hit.addEventListener('pointerleave', () => go(DEF));
     put(DEF);
