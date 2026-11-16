@@ -2465,12 +2465,13 @@
       s2.appendChild(c); DOTS.push(c);
     }
     wrapBond.insertBefore(s2, bondVideo);
-    let dotRaf = 0;
-    const dotsGray = () => { cancelAnimationFrame(dotRaf); DOTS.forEach(c => c.setAttribute('fill', '#D6D7DD')); };
-    const dotsFill = (delay, dur) => { const order = DOTS.slice().sort(() => Math.random() - .5); let t0 = 0, k = 0;
-      const step = now => { if (!t0) t0 = now + delay; const n = Math.min(order.length, Math.floor(Math.max(0, now - t0) / dur * order.length));
-        while (k < n) order[k++].setAttribute('fill', '#2089F9'); if (k < order.length) dotRaf = requestAnimationFrame(step); };
-      dotRaf = requestAnimationFrame(step); };
+    // 가운데에서 바깥으로 번지듯 물듦: 점마다 거리만큼 늦게, 약간의 흔들림을 섞어 색이 스르륵 바뀜
+    DOTS.forEach(c => { const d = Math.hypot(+c.getAttribute('cx') - 959.5, +c.getAttribute('cy') - 4181.82) / 150.5;
+      c.dataset.dl = Math.round(Math.pow(d, .85) * 950 + Math.random() * 260); });
+    const dotsGray = () => DOTS.forEach(c => { c.style.transition = 'none'; c.style.fill = '#D6D7DD'; });
+    const dotsFill = (delay) => { DOTS.forEach(c => { c.style.transition = `fill .55s cubic-bezier(.4,0,.2,1) ${delay + +c.dataset.dl}ms`; });
+      requestAnimationFrame(() => DOTS.forEach(c => c.style.fill = '#2089F9')); };
+    DOTS.forEach(c => c.removeAttribute('fill')); dotsGray();
     // 오른쪽 카드: 회색 원(32,382건)이 먼저 나타나고 → 그 자리에서 파란 원이 커지며 제자리로 이동(51,626건) → 사이 빛 띠가 이어짐
     const s3 = document.createElementNS(NS, 'svg');
     s3.setAttribute('viewBox', '1372 4012 400 312');
@@ -2502,7 +2503,7 @@
       cb.animate([{ opacity:0, transform:'translate(-196.63px, 112.23px) scale(.573)' }, { opacity:1, offset:.25 }, { opacity:1, transform:'translate(0, 0) scale(1)' }], { duration:1300, delay:800, easing:'cubic-bezier(.45,0,.2,1)', fill:'forwards' });
       bm.animate([{ opacity:0 }, { opacity:.6 }], { duration:800, delay:1500, easing:'ease', fill:'forwards' });
       lb.animate([{ opacity:0 }, { opacity:1 }], { duration:500, delay:1850, easing:'ease', fill:'forwards' });
-      dotsFill(300, 1300);
+      dotsFill(300);
       nums.forEach((n, i) => n.animate([{ transform:'translateY(100%)' }, { transform:'translateY(0)' }], { duration:900, delay:350 + i * 120, easing:'cubic-bezier(.2,.7,.2,1)', fill:'forwards' }));
     };
     const sync = () => {
