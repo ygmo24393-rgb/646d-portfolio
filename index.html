@@ -2437,6 +2437,46 @@
     ['bond-pp-c1.webp', 665, 5994, 588, 728, 280, 70, false],
     ['bond-pp-c2.webp', 1275, 5994, 588, 728, 400, 70, false],
   ], 5806, 6722);
+  // BACKGROUND 통계 카드: 동그라미가 회색에서 하나씩 파랗게 채워지고(72% → 10개 중 7개), 숫자는 아래에서 위로 올라옴
+  const STATS = (() => {
+    const NS = 'http://www.w3.org/2000/svg';
+    const svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('viewBox', '109 4092.32 480 192'); svg.setAttribute('preserveAspectRatio', 'none');
+    Object.assign(svg.style, { position:'absolute', left:`${109 / 1920 * 100}%`, top:`${4092.32 / BOND_H * 100}%`, width:`${480 / 1920 * 100}%`, height:`${192 / BOND_H * 100}%`, zIndex:2, pointerEvents:'none', overflow:'visible' });
+    const dots = [];
+    for (let r = 0; r < 2; r++) for (let c = 0; c < 5; c++) {
+      const e = document.createElementNS(NS, 'circle');
+      e.setAttribute('cx', 157 + c * 96); e.setAttribute('cy', 4140.32 + r * 96); e.setAttribute('r', 48.3);
+      e.style.fill = '#EAEAEE'; e.style.transition = 'fill .45s cubic-bezier(.4,0,.2,1)';
+      svg.appendChild(e); dots.push(e);
+    }
+    wrapBond.insertBefore(svg, bondVideo);
+    const nums = [[100, 292], [710, 996], [1322, 1523]].map(([x0, x1], i) => {
+      const box = document.createElement('div');
+      Object.assign(box.style, { position:'absolute', left:`${x0 / 1920 * 100}%`, top:`${4372 / BOND_H * 100}%`, width:`${(x1 - x0) / 1920 * 100}%`, height:`${84 / BOND_H * 100}%`, background:'#fff', overflow:'hidden', zIndex:2, pointerEvents:'none' });
+      const img = document.createElement('img'); img.src = `bond-num${i}.webp`; img.alt = '';
+      Object.assign(img.style, { position:'absolute', left:0, top:0, width:'100%', height:'100%', transform:'translateY(100%)' });
+      box.appendChild(img); wrapBond.insertBefore(box, bondVideo); return img;
+    });
+    let on = false, timers = [];
+    const hide = () => { timers.forEach(clearTimeout); timers = [];
+      dots.forEach(d => { d.style.transition = 'none'; d.style.fill = '#EAEAEE'; void d.getBBox; d.style.transition = 'fill .45s cubic-bezier(.4,0,.2,1)'; });
+      nums.forEach(n => { n.getAnimations().forEach(a => a.cancel()); n.style.transform = 'translateY(100%)'; }); };
+    const show = () => {
+      dots.slice(0, 7).forEach((d, i) => timers.push(setTimeout(() => d.style.fill = '#2089F9', 250 + i * 120)));
+      nums.forEach((n, i) => n.animate([{ transform:'translateY(100%)' }, { transform:'translateY(0)' }], { duration:900, delay:350 + i * 120, easing:'cubic-bezier(.2,.7,.2,1)', fill:'forwards' }));
+    };
+    const sync = () => {
+      const open = detail.classList.contains('open') && !wrapBond.hidden;
+      const R = wrapBond.getBoundingClientRect(), k = R.width / 1920, vh = detail.clientHeight;
+      const top = R.top + 4092 * k, bot = R.top + 4460 * k;
+      if (open && top < vh * 0.8 && bot > 0) { if (!on) { on = true; show(); } }
+      else if (!open || top > vh + 40) { if (on) { on = false; hide(); } }
+    };
+    detail.addEventListener('scroll', () => requestAnimationFrame(sync), { passive:true });
+    setInterval(sync, 600);
+    return { reset(){ on = false; hide(); } };
+  })();
   // 섹션 위 여백 추가: 온보딩 +70 · 자산 대시보드 +30 · 기록함 +30 — 그 아래 덧그림도 같이 내림 (bond.svg도 같은 자리에서 벌어짐)
   { const CUTS = [[23380, 70], [29150, 30], [30870, 20], [35200, 30]];   // 자산 대시보드 아래 +20
     const off = y => CUTS.reduce((s, [c, g]) => s + (y >= c ? g : 0), 0);
@@ -2467,7 +2507,7 @@
       }
     });
   }
-  function bondReset(){ FX.off(); FX2.reset(); OVR.reset(); PAIN1.reset(); PAIN2.reset(); SWATCH.reset(); ASSETS.reset(); CHART.reset(); LIVE.forEach(o => { if (o.on) { o.on = false; o.stop(); } }); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ FX.off(); FX2.reset(); OVR.reset(); STATS.reset(); PAIN1.reset(); PAIN2.reset(); SWATCH.reset(); ASSETS.reset(); CHART.reset(); LIVE.forEach(o => { if (o.on) { o.on = false; o.stop(); } }); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
