@@ -2523,6 +2523,48 @@
     setInterval(sync, 600);
     return { reset(){ on = false; hide(); } };
   })();
+  // UX WRITING: 사진과 카드가 차례로 떠오르고 → 카드마다 '어려운 말' 아래로 선이 내려오며 → '쉬운 말'이 밀려 올라오고 → 설명이 나타남
+  const UXW = (() => {
+    const mk = (src, x, y, w, h, bg, mask) => {
+      const box = document.createElement('div');
+      Object.assign(box.style, { position:'absolute', left:`${x / 1920 * 100}%`, top:`${y / BOND_H * 100}%`, width:`${w / 1920 * 100}%`, height:`${h / BOND_H * 100}%`,
+        background:bg || 'transparent', overflow: mask ? 'hidden' : 'visible', zIndex:2, pointerEvents:'none' });
+      const img = document.createElement('img'); img.src = src; img.alt = '';
+      Object.assign(img.style, { position:'absolute', left:0, top:0, width:'100%', height:'100%', opacity:0, willChange:'transform, opacity' });
+      box.appendChild(img); wrapBond.insertBefore(box, bondVideo); return img;
+    };
+    const photo = mk('bond-ux-photo.webp', 213, 14071, 582, 1069, '#fff');
+    const CARDS = [['a', 823, 14073, 330, 194], ['b', 823, 14620, 330, 194], ['c', 1280, 14448, 284, 154]].map(([k, x, y, ty, lh]) => ({
+      base: mk(`bond-ux-${k}.webp`, x - 2, y - 2, 431, 522, '#fff'),
+      line: mk(`bond-ux-${k}l.webp`, x + 40, y + 106, 50, lh),
+      term: mk(`bond-ux-${k}t.webp`, x + 22, y + ty - 8, 398, 388 - ty, null, true),
+      desc: mk(`bond-ux-${k}d.webp`, x + 40, y + 412, 380, 60),
+    }));
+    const all = [photo, ...CARDS.flatMap(c => [c.base, c.line, c.term, c.desc])];
+    const E = 'cubic-bezier(.2,.7,.2,1)';
+    const hide = () => all.forEach(e => { e.getAnimations().forEach(a => a.cancel()); e.style.opacity = 0; });
+    const show = () => {
+      photo.animate([{ transform:'translateY(70px)', opacity:0 }, { transform:'translateY(0)', opacity:1 }], { duration:1300, easing:E, fill:'forwards' });
+      CARDS.forEach((c, i) => {
+        const d = 200 + i * 180;
+        c.base.animate([{ transform:'translateY(60px)', opacity:0 }, { transform:'translateY(0)', opacity:1 }], { duration:1100, delay:d, easing:E, fill:'forwards' });
+        c.line.animate([{ clipPath:'inset(0 0 100% 0)', opacity:1 }, { clipPath:'inset(0 0 0% 0)', opacity:1 }], { duration:650, delay:d + 750, easing:'cubic-bezier(.45,0,.25,1)', fill:'forwards' });
+        c.term.animate([{ transform:'translateY(100%)', opacity:1 }, { transform:'translateY(0)', opacity:1 }], { duration:850, delay:d + 1250, easing:E, fill:'forwards' });
+        c.desc.animate([{ transform:'translateY(12px)', opacity:0 }, { transform:'translateY(0)', opacity:1 }], { duration:700, delay:d + 1550, easing:E, fill:'forwards' });
+      });
+    };
+    let on = false;
+    const sync = () => {
+      const open = detail.classList.contains('open') && !wrapBond.hidden;
+      const R = wrapBond.getBoundingClientRect(), k = R.width / 1920, vh = detail.clientHeight;
+      const top = R.top + 14073 * k, bot = R.top + 15137 * k;
+      if (open && top < vh * 0.8 && bot > 0) { if (!on) { on = true; show(); } }
+      else if (!open || top > vh + 40) { if (on) { on = false; hide(); } }
+    };
+    detail.addEventListener('scroll', () => requestAnimationFrame(sync), { passive:true });
+    setInterval(sync, 600);
+    return { reset(){ on = false; hide(); } };
+  })();
   // 섹션 위 여백 추가: 온보딩 +70 · 자산 대시보드 +30 · 기록함 +30 — 그 아래 덧그림도 같이 내림 (bond.svg도 같은 자리에서 벌어짐)
   { const CUTS = [[23380, 70], [29150, 30], [30870, 20], [35200, 30]];   // 자산 대시보드 아래 +20
     const off = y => CUTS.reduce((s, [c, g]) => s + (y >= c ? g : 0), 0);
@@ -2553,7 +2595,7 @@
       }
     });
   }
-  function bondReset(){ FX.off(); FX2.reset(); OVR.reset(); STATS.reset(); PAIN1.reset(); PAIN2.reset(); SWATCH.reset(); ASSETS.reset(); CHART.reset(); LIVE.forEach(o => { if (o.on) { o.on = false; o.stop(); } }); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ FX.off(); FX2.reset(); OVR.reset(); STATS.reset(); UXW.reset(); PAIN1.reset(); PAIN2.reset(); SWATCH.reset(); ASSETS.reset(); CHART.reset(); LIVE.forEach(o => { if (o.on) { o.on = false; o.stop(); } }); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
