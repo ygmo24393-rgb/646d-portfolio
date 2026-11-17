@@ -1532,7 +1532,7 @@
     let played = false;
     return {
       top: 12972,
-      reset(){ played = false; all.forEach(d => { d.style.transition = 'none'; d.style.opacity = 1; d.style.transform = 'none'; }); },
+      reset(force){ if (!played && !force) return; played = false; all.forEach(d => { d.style.transition = 'none'; d.style.opacity = 1; d.style.transform = 'none'; }); },
       play(){
         if (played) return; played = true;
         const SWEEP = 1700;
@@ -2683,7 +2683,9 @@
     { const k1 = wrapBond.clientWidth / 1920, b1 = (detail.scrollTop + detail.clientHeight * .8) / k1;
       if (NOTI.top < b1) NOTI.play(); }
     { const k0 = wrapBond.clientWidth / 1920, b0 = (detail.scrollTop + detail.clientHeight * .75) / k0, t0 = detail.scrollTop / k0;
-      if (TL.top < b0) TL.play(); }
+      const vb0 = (detail.scrollTop + detail.clientHeight) / k0;
+      if (TL.top < b0 && TL.top + 420 > t0) TL.play();                     // 화면 안에 들어왔을 때만 재생
+      else if (TL.top > vb0 + 40 || TL.top + 420 < t0 - 200) TL.reset(); }  // 화면 밖으로 나가면 다시 준비 → 올 때마다 재생
     const k = wrapBond.clientWidth / 1920, bottom = (detail.scrollTop + detail.clientHeight * .85) / k, top = detail.scrollTop / k;
     wipes.forEach(w => {
       if (w.done) return;
