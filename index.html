@@ -2397,17 +2397,17 @@
   // 스크롤해서 들어오면 아래에서 위로 차례로 떠오름 (원래 그림은 배경색으로 덮고, 같은 자리 잘라낸 고화질 조각을 올림)
   //  BLK: [파일, x, y, w, h, 지연(ms), 이동거리, 틀 안에서 밀려 올라오기?]
   const RISE = (BLK, T0, T1) => {
-    const els = BLK.map(([src, x, y, w, h, dl, dy, mask]) => {
+    const els = BLK.map(([src, x, y, w, h, dl, dy, mask, dx = 0]) => {
       const box = document.createElement('div');
       Object.assign(box.style, { position:'absolute', left:`${x / 1920 * 100}%`, top:`${y / BOND_H * 100}%`, width:`${w / 1920 * 100}%`, height:`${h / BOND_H * 100}%`,
         background:'#0C0C10', overflow: mask ? 'hidden' : 'visible', zIndex:2, pointerEvents:'none' });
       const img = document.createElement('img'); img.src = src; img.alt = '';
       Object.assign(img.style, { position:'absolute', left:0, top:0, width:'100%', height:'100%', opacity:0, willChange:'transform, opacity' });
       box.appendChild(img); wrapBond.insertBefore(box, bondVideo);
-      return { img, dl, dy, h };
+      return { img, dl, dy, h, w, dx };
     });
     const hide = () => els.forEach(e => { e.img.getAnimations().forEach(a => a.cancel()); e.img.style.opacity = 0; });
-    const show = () => els.forEach(e => e.img.animate([{ transform:`translateY(${e.dy / e.h * 100}%)`, opacity:0 }, { transform:'translateY(0)', opacity:1 }],
+    const show = () => els.forEach(e => e.img.animate([{ transform:`translate(${e.dx / e.w * 100}%, ${e.dy / e.h * 100}%)`, opacity:0 }, { transform:'translate(0, 0)', opacity:1 }],
       { duration: e.h > 500 ? 1300 : 1000, delay:e.dl, easing:'cubic-bezier(.2,.7,.2,1)', fill:'forwards' }));
     let on = false;
     const sync = () => {
@@ -2430,12 +2430,12 @@
   ], 2262, 3200);
   // PAIN POINT: 사진 카드가 떠오름
   const PAIN1 = { reset(){} };   // 페인포인트 사진 카드는 아래 PHOTO_TXT로
-  // 그 아래 제목 → 카드 3장 차례로
+  // 그 아래 제목 → 카드 3장이 왼쪽부터 하나씩 (왼쪽에서 살짝 밀려 들어옴)
   const PAIN2 = RISE([
     ['bond-pp-hd.webp', 60, 5806, 470, 104, 0, 60, true],
-    ['bond-pp-c0.webp', 55, 5994, 588, 728, 160, 70, false],
-    ['bond-pp-c1.webp', 665, 5994, 588, 728, 280, 70, false],
-    ['bond-pp-c2.webp', 1275, 5994, 588, 728, 400, 70, false],
+    ['bond-pp-c0.webp', 55, 5994, 588, 728, 250, 24, false, -70],
+    ['bond-pp-c1.webp', 665, 5994, 588, 728, 600, 24, false, -70],
+    ['bond-pp-c2.webp', 1275, 5994, 588, 728, 950, 24, false, -70],
   ], 5806, 6722);
   // BACKGROUND 통계 카드: 동그라미가 회색에서 하나씩 파랗게 채워지고(72% → 10개 중 7개), 숫자는 아래에서 위로 올라옴
   const STATS = (() => {
