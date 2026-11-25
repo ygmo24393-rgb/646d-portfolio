@@ -43,7 +43,9 @@
   .dfoot .nm sup{font-size:.36em;vertical-align:top;position:relative;top:-.32em;margin-left:.22em;letter-spacing:0;-webkit-text-stroke:calc(.4 / 1920 * 100vw) currentColor}
   .dfoot .cp{position:absolute;right:calc(57 / 1920 * 100vw);bottom:calc(137 / 1920 * 100vw);font-size:calc(23 / 1920 * 100vw);line-height:1;letter-spacing:-.01em}
   #detail .dwrap[hidden]{display:none}
-  #ppgImg{display:block;width:100%;height:auto;aspect-ratio:1920/16013;background:#fff}
+  #ppgHero{display:block;width:100%;height:auto;aspect-ratio:1920/1760;background:#fff}
+  #ppgCut{position:relative;width:100%;aspect-ratio:1920/14133;overflow:hidden;background:#fff}   /* 원래 파란 표지(0~1880)는 잘라냄 */
+  #ppgImg{position:absolute;left:0;top:calc(-1880 / 14133 * 100%);display:block;width:100%;height:auto;aspect-ratio:1920/16013}
   #bondImg{display:block;width:100%;height:auto;aspect-ratio:1920/43535;background:#0C0C10}
   #proj #card2,#proj #card5,#proj #card6{cursor:pointer}
   /* 영상의 어두운 배경을 섹션 배경에 녹임: 'lighten'은 더 밝은 쪽만 보여서, 브라우저마다 영상 색이 달라도 경계가 생기지 않음 */
@@ -279,7 +281,8 @@
     <div id="pySvg" role="img" aria-label="PYEOJIN GOTHIC (KR) — 프로젝트 상세"></div>
   </div>
   <div class="dwrap" id="wrapPpg" hidden>
-    <img id="ppgImg" alt="BBEGI(빼기) — 프로젝트 상세" decoding="async">
+    <img id="ppgHero" src="bbegi-hero.webp" alt="BBEGI — ICON DESIGN" decoding="async">
+    <div id="ppgCut"><img id="ppgImg" alt="BBEGI(빼기) — 프로젝트 상세" decoding="async"></div>
   </div>
   <div class="dwrap" id="wrapBond" hidden>
     <img id="bondImg" alt="BON-D — 프로젝트 상세" decoding="async">
