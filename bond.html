@@ -187,7 +187,7 @@
 </style>
 <style>
   /* ── BON-D 메인(첫 화면) + 상단 메뉴 ── */
-  #bondMain{position:relative;width:100%;aspect-ratio:1164/654;background:#0B2A8C url(bond-main.webp) center/100% 100% no-repeat}
+  #bondMain{position:relative;width:100%;aspect-ratio:1164/654;background:#0B2A8C url(bond-main.webp?v=2) center/100% 100% no-repeat}
   #bondMain .hit{position:absolute;display:block;cursor:pointer}
   #bondMain .hit::after{content:"";position:absolute;left:12%;right:12%;bottom:18%;height:1px;background:#fff;transform:scaleX(0);transform-origin:0 50%;transition:transform .35s cubic-bezier(.2,.7,.2,1)}
   #bondMain .hit:hover::after,#bondMain .hit:focus-visible::after{transform:scaleX(1)}
@@ -311,14 +311,13 @@
   <!-- BON-D 메인(첫 화면) : 이미지 위 상단 메뉴를 실제 버튼으로 -->
   <section id="bondMain" aria-label="BON-D">
     <a class="hit logo" data-go="top" style="left:calc(30/1164*100%);top:calc(8/654*100%);width:calc(84/1164*100%);height:calc(28/654*100%)" aria-label="BON-D 처음으로"></a>
-    <a class="hit" data-go="video" style="left:calc(800/1164*100%);top:calc(8/654*100%);width:calc(56/1164*100%);height:calc(28/654*100%)" aria-label="VIDEO"></a>
     <a class="hit" data-go="project" style="left:calc(884/1164*100%);top:calc(8/654*100%);width:calc(70/1164*100%);height:calc(28/654*100%)" aria-label="PROJECT"></a>
     <a class="hit" data-go="design" style="left:calc(983/1164*100%);top:calc(8/654*100%);width:calc(61/1164*100%);height:calc(28/654*100%)" aria-label="DESIGN"></a>
     <a class="hit" data-go="service" style="left:calc(1073/1164*100%);top:calc(8/654*100%);width:calc(66/1164*100%);height:calc(28/654*100%)" aria-label="SERVICE"></a>
   </section>
   <nav id="bondNav" aria-label="BON-D 메뉴">
     <a class="bn-logo" data-go="top"><i></i>BON-D</a>
-    <ul><li><a data-go="video">VIDEO</a></li><li><a data-go="project">PROJECT</a></li><li><a data-go="design">DESIGN</a></li><li><a data-go="service">SERVICE</a></li></ul>
+    <ul><li><a data-go="project">PROJECT</a></li><li><a data-go="design">DESIGN</a></li><li><a data-go="service">SERVICE</a></li></ul>
   </nav>
   <div class="dwrap" id="wrapBond" hidden>
     <img id="bondImg" alt="BON-D — 프로젝트 상세" decoding="async">
@@ -2825,8 +2824,8 @@
   if (!detail || !wrap || !main || !nav) return;
   const BOND_H = 43535;
   // 상세 이미지(1920 x 43535) 기준 각 섹션의 시작 위치
-  const SEC = { project:1176, video:16100, design:18700, service:23450 };
-  const ORDER = ['project', 'video', 'design', 'service'];
+  const SEC = { project:1176, design:18700, service:23450 };
+  const ORDER = ['project', 'design', 'service'];
   const topOf = key => {
     if (key === 'top') return 0;
     return wrap.offsetTop + SEC[key] / BOND_H * wrap.offsetHeight - (key === 'project' ? 0 : nav.offsetHeight);
