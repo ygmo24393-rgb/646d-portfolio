@@ -43,8 +43,9 @@
   .dfoot .nm sup{font-size:.36em;vertical-align:top;position:relative;top:-.32em;margin-left:.22em;letter-spacing:0;-webkit-text-stroke:calc(.4 / 1920 * 100vw) currentColor}
   .dfoot .cp{position:absolute;right:calc(57 / 1920 * 100vw);bottom:calc(137 / 1920 * 100vw);font-size:calc(23 / 1920 * 100vw);line-height:1;letter-spacing:-.01em}
   #detail .dwrap[hidden]{display:none}
+  #ppgImg{display:block;width:100%;height:auto;aspect-ratio:1920/16013;background:#fff}
   #bondImg{display:block;width:100%;height:auto;aspect-ratio:1920/43535;background:#0C0C10}
-  #proj #card2,#proj #card5{cursor:pointer}
+  #proj #card2,#proj #card5,#proj #card6{cursor:pointer}
   /* 영상의 어두운 배경을 섹션 배경에 녹임: 'lighten'은 더 밝은 쪽만 보여서, 브라우저마다 영상 색이 달라도 경계가 생기지 않음 */
   #wrapBond .bvid{position:absolute;display:block;object-fit:cover;cursor:pointer;background:transparent;mix-blend-mode:lighten}
   #wrapBond .wipe{position:absolute;transform-origin:50% 0;will-change:transform;pointer-events:none}
@@ -276,6 +277,9 @@
   </div>
   <div class="dwrap" id="wrapPy" hidden>
     <div id="pySvg" role="img" aria-label="PYEOJIN GOTHIC (KR) — 프로젝트 상세"></div>
+  </div>
+  <div class="dwrap" id="wrapPpg" hidden>
+    <img id="ppgImg" alt="BBEGI(빼기) — 프로젝트 상세" decoding="async">
   </div>
   <div class="dwrap" id="wrapBond" hidden>
     <img id="bondImg" alt="BON-D — 프로젝트 상세" decoding="async">
@@ -1267,7 +1271,8 @@
     detail.addEventListener('scroll', () => { if (ticking) return; ticking = true; requestAnimationFrame(() => { ticking = false; check(); heroParallax(); drift(); }); }, { passive:true });
     heroParallax(); check(); drift();
   }
-  const DETAILS = { 4: { hash:'ambit', src:'ambit.svg', bg:'#151515' }, 2: { hash:'bond', src:'bond.svg', bg:'#0C0C10', img:true }, 5: { hash:'pyeojin', src:'pyeojin.svg', bg:'#FAFAFA' } };
+  const DETAILS = { 4: { hash:'ambit', src:'ambit.svg', bg:'#151515' }, 2: { hash:'bond', src:'bond.svg', bg:'#0C0C10', img:true }, 5: { hash:'pyeojin', src:'pyeojin.svg', bg:'#FAFAFA' }, 6: { hash:'bbegi', src:'ppaegi.svg', bg:'#FFFFFF' } };
+  const wrapPpg = document.getElementById('wrapPpg'), ppgImg = document.getElementById('ppgImg');
   const wrapAmbit = $('wrapAmbit'), wrapBond = $('wrapBond'), bondImg = $('bondImg'), wrapPy = $('wrapPy'), pySvg = $('pySvg');
 
   /* ───────── PYEOJIN GOTHIC 상세 ───────── */
@@ -2716,16 +2721,17 @@
   }
   function openDetail(key){
     const d = Object.values(DETAILS).find(x => x.hash === key); if (!d) return;
-    wrapAmbit.hidden = d.hash !== 'ambit'; wrapBond.hidden = d.hash !== 'bond'; wrapPy.hidden = d.hash !== 'pyeojin';
+    wrapAmbit.hidden = d.hash !== 'ambit'; wrapBond.hidden = d.hash !== 'bond'; wrapPy.hidden = d.hash !== 'pyeojin'; wrapPpg.hidden = d.hash !== 'bbegi';
     detail.style.background = d.bg;
-    document.getElementById('dfoot').style.background = d.hash === 'bond' ? '#0C0C10' : '#151515';   // 페이지 끝 배경색
+    document.getElementById('dfoot').style.background = d.hash === 'bond' ? '#0C0C10' : d.hash === 'bbegi' ? '#0053FF' : '#151515';   // 페이지 끝 배경색
     if (d.img){ if (!bondImg.getAttribute('src')) bondImg.setAttribute('src', d.src); bondReset(); requestAnimationFrame(fitBondHero); setTimeout(bondCheck, 450); }
+    else if (d.hash === 'bbegi'){ if (!ppgImg.getAttribute('src')) ppgImg.setAttribute('src', d.src); }
     else if (d.hash === 'pyeojin'){ if (window.__pyPending){ const f = window.__pyPending; window.__pyPending = null; f(); } pyReset(); loadPy(); requestAnimationFrame(fitPy); setTimeout(pyCheck, 450); }
     else { if (window.__ambitPending){ const f = window.__ambitPending; window.__ambitPending = null; f(); } loadDetail(d.src); requestAnimationFrame(() => window.__fitAmbitHero && window.__fitAmbitHero()); }
     lastScroll = scrollY;
     detail.scrollTop = 0;
     detail.classList.add('open'); detail.setAttribute('aria-hidden', 'false');
-    playEntry({ ambit: wrapAmbit, bond: wrapBond, pyeojin: wrapPy }[d.hash], veils[d.hash]);
+    playEntry({ ambit: wrapAmbit, bond: wrapBond, pyeojin: wrapPy, bbegi: wrapPpg }[d.hash], veils[d.hash] || document.createElement('div'));
     detailClose.classList.add('on'); 
     document.body.classList.add('lock');
   }
@@ -2747,6 +2753,7 @@
   const c4 = document.getElementById('card4'); if (c4) c4.addEventListener('click', () => goDetail(4));
   const c2 = document.getElementById('card2'); if (c2) c2.addEventListener('click', () => goDetail(2));
   const c5 = document.getElementById('card5'); if (c5) c5.addEventListener('click', () => goDetail(5));
+  const c6 = document.getElementById('card6'); if (c6) c6.addEventListener('click', () => goDetail(6));
   // 페이지가 안정되면 상세 이미지를 미리 받아둠
   setTimeout(() => loadDetail(DETAILS[4].src), 4000);
   setTimeout(() => { if (!bondImg.getAttribute('src')) bondImg.setAttribute('src', DETAILS[2].src); }, 7000);
