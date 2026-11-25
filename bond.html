@@ -193,7 +193,8 @@
   /* 첫 사진(UIUX DESIGN) + 흰색 소개 섹션은 잘라서 숨김 : 상세 이미지 위쪽 1860px */
   #bondClip{overflow:hidden}
   #bondClip #wrapBond{margin-top:calc(-1860 / 1920 * 100%)}
-  #bondMain{position:relative;width:100%;aspect-ratio:1164/654;background:#0B2A8C url(bond-main.webp?v=3) center/100% 100% no-repeat}
+  #bondMain{position:relative;width:100%;height:100vh;height:100svh;min-height:calc(100vw * 9 / 16 * .6);background:#0B2A8C url(bond-main.webp?v=4) center/cover no-repeat}
+  @media (max-aspect-ratio:4/3){#bondMain{height:auto;min-height:0;aspect-ratio:1920/1080;background-size:100% 100%}}   /* 세로 화면: 로고가 잘리지 않게 원본 비율 */
   #bondNav{position:fixed;left:0;right:0;top:0;z-index:60;height:calc(70 / 1920 * 100vw);
     background:rgba(12,12,16,0);transition:background .4s ease,-webkit-backdrop-filter .4s ease,backdrop-filter .4s ease}
   /* 맨 위에서는 투명, 스크롤하면 은은한 흐림 */
