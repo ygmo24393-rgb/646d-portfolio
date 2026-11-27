@@ -3,12 +3,12 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>BON-D — yubin</title>
+<title>BON-D</title>
 <link rel="icon" href="bond-favicon.ico?v=2" sizes="any">
 <link rel="icon" type="image/png" sizes="32x32" href="bond-favicon-32.png?v=2">
 <link rel="apple-touch-icon" href="bond-apple-touch-icon.png?v=2">
 <script>window.__ONLY = 'bond';</script>
-<style>body>*:not(#detail):not(script):not(style){visibility:hidden!important}html,body{background:#0C0C10}#detailClose{display:none!important}#detail{transition:none!important}</style>
+<style>body>*:not(#detail):not(script):not(style){visibility:hidden!important}html,body{background:#0C0C10}#detailClose{display:none!important}#dfoot{display:none!important}html,body{overflow:hidden!important;scrollbar-width:none}#detail{scrollbar-width:none}::-webkit-scrollbar{display:none;width:0;height:0}#detail{transition:none!important}</style>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" rel="stylesheet">
@@ -315,7 +315,7 @@
     <img id="bondImg" alt="BON-D — 프로젝트 상세" decoding="async">
     <!-- BON-D 로고 모션 : 마우스를 올리면 재생 -->
     <video id="bondVideo" class="bvid" src="bond-logo.mp4" poster="bond-logo-poster.jpg" muted playsinline preload="metadata" loop
-           style="left:0;top:calc(16420/43385*100%);width:100%;height:calc(1048/43385*100%)"></video>
+           style="left:0;top:calc(16190/43535*100%);width:100%;height:calc(1048/43535*100%)"></video>
   </div>
   </div>
   <footer class="dfoot" id="dfoot"><span class="nm">yubin<sup>®</sup></span><span class="cp">©yby All Rights Reserved.</span></footer>
@@ -2711,6 +2711,78 @@
       if (t.endsWith('%')) { const y = parseFloat(t) / 100 * BOND_H, o = off(y); if (o) el.style.top = `${(y + o) / BOND_H * 100}%`; }
     }
   }
+  /* ───── 피드백 반영 (BON-D 단독) ───── */
+  const mkBox = (x, y, w, h, css) => { const b = document.createElement('div');
+    Object.assign(b.style, { position:'absolute', left:`${x / 1920 * 100}%`, top:`${y / BOND_H * 100}%`, width:`${w / 1920 * 100}%`, height:`${h / BOND_H * 100}%`, zIndex:2, pointerEvents:'none' }, css || {});
+    wrapBond.insertBefore(b, bondVideo); return b; };
+  const mkImg = (box, src, css) => { const i = document.createElement('img'); i.src = src; i.alt = ''; i.decoding = 'async';
+    Object.assign(i.style, { position:'absolute', left:0, top:0, width:'100%', height:'100%', display:'block' }, css || {}); box.appendChild(i); return i; };
+  const onEnter = (T0, T1, show, hide, at = .8) => { let on = false;
+    const sync = () => { const open = detail.classList.contains('open') && !wrapBond.hidden;
+      const R = wrapBond.getBoundingClientRect(), k = R.width / 1920, vh = detail.clientHeight, top = R.top + T0 * k, bot = R.top + T1 * k;
+      if (open && top < vh * at && bot > 0) { if (!on) { on = true; show(); } }
+      else if (!open || top > vh + 40) { if (on) { on = false; hide(); } } };
+    detail.addEventListener('scroll', () => requestAnimationFrame(sync), { passive:true }); setInterval(sync, 500); hide(); return { reset(){ on = false; hide(); } }; };
+  const EZ = 'cubic-bezier(.2,.7,.2,1)';
+  const kill = e => e.getAnimations().forEach(a => a.cancel());
+
+  // ① PROBLEM 카드 3장: 마우스를 올리면 사진 딤드가 걷힘
+  [55, 665, 1275].forEach((x, i) => {
+    const b = mkBox(x, 5994, 588, 728, { zIndex:3, pointerEvents:'auto', borderRadius:'calc(35 / 1920 * 100vw)', overflow:'hidden' });
+    const im = mkImg(b, `bond-pp-h${i}.webp`, { opacity:0, transition:'opacity .5s cubic-bezier(.4,0,.2,1)' });
+    b.addEventListener('pointerenter', () => im.style.opacity = 1); b.addEventListener('pointerleave', () => im.style.opacity = 0);
+  });
+
+  // ② 슬로건 ONE PLATFORM.: 한 줄씩 아래에서 밀려 올라오고, 스크롤에 따라 줄마다 살짝 엇갈려 움직임
+  const SLG = (() => {
+    const bg = mkBox(0, 8650, 1920, 910); mkImg(bg, 'bond-slog-bg.webp');
+    const L = [[8700, 8845], [8928, 9073], [9156, 9301], [9384, 9529]].map(([y0, y1]) => {
+      const b = mkBox(60, y0, 1340, y1 - y0, { overflow:'hidden' }); const im = mkImg(b, `bond-slog-l${[8700, 8928, 9156, 9384].indexOf(y0)}.webp`); return { b, im }; });
+    const para = () => { const R = bg.getBoundingClientRect(), vh = detail.clientHeight; if (R.bottom < 0 || R.top > vh) return;
+      const p = (R.top + R.height / 2 - vh / 2) / vh; L.forEach((l, i) => l.b.style.transform = `translateX(${(p * (i % 2 ? 40 : -40)).toFixed(1)}px)`); };
+    detail.addEventListener('scroll', () => requestAnimationFrame(para), { passive:true });
+    return onEnter(8700, 9560,
+      () => L.forEach((l, i) => l.im.animate([{ transform:'translateY(105%)' }, { transform:'translateY(0)' }], { duration:1000, delay:i * 130, easing:EZ, fill:'forwards' })),
+      () => L.forEach(l => { kill(l.im); l.im.style.transform = 'translateY(105%)'; }), .78);
+  })();
+
+  // ③ 타입 소개 슬로건 카드 2장: 줄마다 아래에서 밀려 올라오고 → 화살표가 대각선으로 들어옴 / 카드에 마우스를 올리면 화살표가 살짝 움직임
+  const TYP = (() => {
+    const bg = mkBox(0, 19400, 1920, 360); mkImg(bg, 'bond-type-bg.webp');
+    const Y = [[19412, 19526], [19528, 19642], [19644, 19756]], X = [[125, 785], [1040, 1700]];
+    const lines = [];
+    X.forEach(([x0, x1], j) => Y.forEach(([y0, y1], i) => { const b = mkBox(x0, y0, x1 - x0, y1 - y0, { overflow:'hidden' }); lines.push({ im: mkImg(b, `bond-type-${j}${i}.webp`), d: i * 140 + j * 90 }); }));
+    const arrows = [[795, 0], [1710, 1]].map(([x, j]) => { const b = mkBox(x, 19653, 82, 83, { overflow:'hidden' }); return mkImg(b, `bond-type-a${j}.webp`, { transition:'translate .45s cubic-bezier(.2,.7,.2,1)' }); });
+    [[60, 0], [975, 1]].forEach(([x, j]) => { const h = mkBox(x, 19150, 885, 610, { zIndex:3, pointerEvents:'auto' });
+      h.addEventListener('pointerenter', () => arrows[j].style.translate = '8px 8px'); h.addEventListener('pointerleave', () => arrows[j].style.translate = '0 0'); });
+    return onEnter(19412, 19760,
+      () => { lines.forEach(l => l.im.animate([{ transform:'translateY(105%)' }, { transform:'translateY(0)' }], { duration:950, delay:l.d, easing:EZ, fill:'forwards' }));
+              arrows.forEach((a, j) => a.animate([{ transform:'translate(-100%, -100%)' }, { transform:'translate(0, 0)' }], { duration:800, delay:650 + j * 90, easing:EZ, fill:'forwards' })); },
+      () => { lines.forEach(l => { kill(l.im); l.im.style.transform = 'translateY(105%)'; }); arrows.forEach(a => { kill(a); a.style.transform = 'translate(-100%, -100%)'; }); });
+  })();
+
+  // ④ 내 정보: 본인 확인 프로세스 카드가 떠오르고 → 단계 3개가 차례로 나타남
+  const IDC = (() => {
+    const cb = mkBox(1281, 38578, 428, 348, { background:'#fff' }); const card = mkImg(cb, 'bond-idc-base.webp');
+    const R = [[38700, 38761], [38761, 38823], [38823, 38890]].map(([y0, y1], i) => { const b = mkBox(1305, y0, 400, y1 - y0, { overflow:'hidden' }); return mkImg(b, `bond-idc-r${i}.webp`); });
+    return onEnter(38578, 38926,
+      () => { card.animate([{ opacity:0, transform:'translateY(40px)' }, { opacity:1, transform:'translateY(0)' }], { duration:1000, easing:EZ, fill:'forwards' });
+              R.forEach((r, i) => r.animate([{ opacity:0, transform:'translateY(14px)' }, { opacity:1, transform:'translateY(0)' }], { duration:700, delay:650 + i * 260, easing:EZ, fill:'forwards' })); },
+      () => [card, ...R].forEach(e => { kill(e); e.style.opacity = 0; }));
+  })();
+
+  // ⑤ BITO 출처: 앱 아이콘을 따라다니던 효과는 끄고 → 아이콘(또는 카드)에 마우스를 올리거나 누르면 아래 해당 카드의 딤드가 걷힘
+  GOV.box.style.display = 'none'; GOV.stop(); GOV.start = () => {};
+  const GC = [60, 670, 1280].map((x, i) => { const b = mkBox(x - 2, 42867, 584, 371, { zIndex:3, pointerEvents:'auto', borderRadius:'calc(31 / 1920 * 100vw)', overflow:'hidden' });
+    return { b, im: mkImg(b, `bond-gov-h${i}.webp`, { opacity:0, transition:'opacity .5s cubic-bezier(.4,0,.2,1)' }) }; });
+  let govSel = -1;
+  const govShow = i => GC.forEach((c, j) => c.im.style.opacity = j === i ? 1 : 0);
+  GC.forEach((c, i) => { c.b.addEventListener('pointerenter', () => govShow(i)); c.b.addEventListener('pointerleave', () => govShow(govSel)); });
+  [756, 900, 1044].forEach((x, i) => { const h = mkBox(x, 42628, 120, 120, { zIndex:3, pointerEvents:'auto', cursor:'pointer', borderRadius:'calc(20 / 1920 * 100vw)', transition:'transform .35s cubic-bezier(.2,.7,.2,1)' });
+    h.addEventListener('pointerenter', () => { govShow(i); h.style.transform = 'translateY(-6px)'; });
+    h.addEventListener('pointerleave', () => { govShow(govSel); h.style.transform = ''; });
+    h.addEventListener('click', () => { govSel = govSel === i ? -1 : i; govShow(govSel); }); });
+  const FB = { reset(){ SLG.reset(); TYP.reset(); IDC.reset(); } };
   function bondCheck(){
     liveSync();
     if (wrapBond.hidden) return;
@@ -2718,7 +2790,7 @@
       if (AUTH.bottom > vt && AUTH.top < vb) AUTH.start(); else AUTH.stop(); }
     { const k1 = wrapBond.clientWidth / 1920, b1 = (detail.scrollTop + detail.clientHeight * .8) / k1;
       if (NOTI.top < b1) NOTI.play(); }
-    { const k0 = wrapBond.clientWidth / 1920, b0 = (detail.scrollTop + detail.clientHeight * .75) / k0, t0 = detail.scrollTop / k0;
+    { const k0 = wrapBond.clientWidth / 1920, b0 = (detail.scrollTop + detail.clientHeight * .95) / k0, t0 = detail.scrollTop / k0;
       const vb0 = (detail.scrollTop + detail.clientHeight) / k0;
       if (TL.top < b0 && TL.top + 420 > t0) TL.play();                     // 화면 안에 들어왔을 때만 재생
       else if (TL.top > vb0 + 40 || TL.top + 420 < t0 - 200) TL.reset(); }  // 화면 밖으로 나가면 다시 준비 → 올 때마다 재생
@@ -2733,7 +2805,7 @@
       }
     });
   }
-  function bondReset(){ FX.off(); FX2.reset(); OVR.reset(); STATS.reset(); UXW.reset(); INS.reset(); SOL.reset(); PAINC.reset(); DESK.reset(); PAIN1.reset(); PAIN2.reset(); SWATCH.reset(); ASSETS.reset(); CHART.reset(); LIVE.forEach(o => { if (o.on) { o.on = false; o.stop(); } }); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
+  function bondReset(){ FB.reset(); FX.off(); FX2.reset(); OVR.reset(); STATS.reset(); UXW.reset(); INS.reset(); SOL.reset(); PAINC.reset(); DESK.reset(); PAIN1.reset(); PAIN2.reset(); SWATCH.reset(); ASSETS.reset(); CHART.reset(); LIVE.forEach(o => { if (o.on) { o.on = false; o.stop(); } }); TL.reset(); NOTI.reset(); AUTH.stop(); wipes.forEach(w => { w.done = false; w.d.style.transition = 'none'; w.d.style.transform = 'none'; }); bondVideo.pause(); bondVideo.currentTime = 0; }
   detail.addEventListener('scroll', () => requestAnimationFrame(bondCheck), { passive:true });
   let lastScroll = 0;
   const mkVeil = (wrap, x, y, w, h, H, bg) => {
